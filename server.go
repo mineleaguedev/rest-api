@@ -37,6 +37,7 @@ func main() {
 	router.PUT("/user/rank", controllers.UpdateUserRank)
 	router.PUT("/user/playtime", controllers.UpdateUserPlaytime)
 	router.PUT("/user/lastSeen", controllers.UpdateUserLastSeen)
+	router.POST("/ban", controllers.BanUser)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("Error starting server: %s", err)
