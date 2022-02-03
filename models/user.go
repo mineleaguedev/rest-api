@@ -15,6 +15,11 @@ type UserRankUpdateInput struct {
 	RankTo   *int64 `json:"rankTo"`
 }
 
+type UserPlaytimeUpdateInput struct {
+	Username string `json:"username" binding:"required"`
+	Playtime int64  `json:"playtime" binding:"required"`
+}
+
 type User struct {
 	ID       int64   `json:"id"`
 	Username string  `json:"username"`

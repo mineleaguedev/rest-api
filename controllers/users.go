@@ -198,3 +198,34 @@ func UpdateUserRank(c *gin.Context) {
 		})
 	}
 }
+
+func UpdateUserPlaytime(c *gin.Context) {
+	var input models.UserPlaytimeUpdateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Printf(input.Username)
+		c.JSON(http.StatusBadRequest, models.Error{
+			Success: false,
+			Message: "Missing one or more fields " + err.Error(),
+		})
+		return
+	}
+
+	if _, err := DB.Exec("UPDATE `users` SET `playtime` = ? WHERE `username` = ?", input.Playtime, input.Username); err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusUnprocessableEntity, models.Error{
+				Success: false,
+				Message: "Invalid username",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, models.Error{
+				Success: false,
+				Message: "Error updating user playtime",
+			})
+			log.Printf("Error updating user playtime: %s\n", err.Error())
+		}
+	} else {
+		c.JSON(http.StatusOK, models.UserResponse{
+			Success: true,
+		})
+	}
+}
