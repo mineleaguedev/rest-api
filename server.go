@@ -33,6 +33,7 @@ func main() {
 
 	router.POST("/user", controllers.CreateUser)
 	router.GET("/user/name/:name", controllers.GetUser)
+	router.PUT("/user/exp", controllers.UpdateUserExp)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("Error starting server: %s", err)
