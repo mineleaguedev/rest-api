@@ -53,7 +53,30 @@ func BanUser(c *gin.Context) {
 		})
 		log.Printf("Error banning user: %s\n", err.Error())
 	} else {
-		c.JSON(http.StatusOK, models.BanResponse{
+		c.JSON(http.StatusOK, models.Response{
+			Success: true,
+		})
+	}
+}
+
+func UnbanUser(c *gin.Context) {
+	var input models.UnbanRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Success: false,
+			Message: "Missing one or more fields " + err.Error(),
+		})
+		return
+	}
+
+	if _, err := DB.Exec("UPDATE `bans` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error unbanning user",
+		})
+		log.Printf("Error unbanning user: %s\n", err.Error())
+	} else {
+		c.JSON(http.StatusOK, models.Response{
 			Success: true,
 		})
 	}

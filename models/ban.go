@@ -7,6 +7,7 @@ type BanRequest struct {
 	Admin    string  `json:"admin" binding:"required"`
 }
 
-type BanResponse struct {
-	Success bool `json:"success"`
+type UnbanRequest struct {
+	Username string `json:"username" binding:"required"`
+	Admin    string `json:"admin" binding:"required"`
 }

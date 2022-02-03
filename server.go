@@ -38,6 +38,7 @@ func main() {
 	router.PUT("/user/playtime", controllers.UpdateUserPlaytime)
 	router.PUT("/user/lastSeen", controllers.UpdateUserLastSeen)
 	router.POST("/ban", controllers.BanUser)
+	router.POST("/unban", controllers.UnbanUser)
 	router.POST("/mute", controllers.MuteUser)
 
 	if err := router.Run(":8080"); err != nil {
