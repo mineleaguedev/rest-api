@@ -9,6 +9,12 @@ type UserExpUpdateInput struct {
 	Exp      int64  `json:"exp" binding:"required"`
 }
 
+type UserRankUpdateInput struct {
+	Username string `json:"username" binding:"required"`
+	Rank     string `json:"rank" binding:"required"`
+	RankTo   *int64 `json:"rankTo"`
+}
+
 type User struct {
 	ID       int64   `json:"id"`
 	Username string  `json:"username"`

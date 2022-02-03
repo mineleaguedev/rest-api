@@ -159,3 +159,42 @@ func UpdateUserExp(c *gin.Context) {
 		})
 	}
 }
+
+func UpdateUserRank(c *gin.Context) {
+	var input models.UserRankUpdateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Printf(input.Username)
+		c.JSON(http.StatusBadRequest, models.Error{
+			Success: false,
+			Message: "Missing one or more fields " + err.Error(),
+		})
+		return
+	}
+
+	var rankTo sql.NullTime
+	if input.RankTo != nil {
+		rankTo = sql.NullTime{
+			Time:  time.Unix(*input.RankTo, 0),
+			Valid: true,
+		}
+	}
+
+	if _, err := DB.Exec("UPDATE `users` SET `rank` = ?, `rank_to` = ? WHERE `username` = ?", input.Rank, rankTo, input.Username); err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusUnprocessableEntity, models.Error{
+				Success: false,
+				Message: "Invalid username",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, models.Error{
+				Success: false,
+				Message: "Error updating user rank",
+			})
+			log.Printf("Error updating user rank: %s\n", err.Error())
+		}
+	} else {
+		c.JSON(http.StatusOK, models.UserResponse{
+			Success: true,
+		})
+	}
+}
