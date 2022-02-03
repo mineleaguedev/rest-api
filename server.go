@@ -40,6 +40,7 @@ func main() {
 	router.POST("/ban", controllers.BanUser)
 	router.POST("/unban", controllers.UnbanUser)
 	router.POST("/mute", controllers.MuteUser)
+	router.POST("/unmute", controllers.UnmuteUser)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("Error starting server: %s", err)

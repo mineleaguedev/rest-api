@@ -53,7 +53,30 @@ func MuteUser(c *gin.Context) {
 		})
 		log.Printf("Error muting user: %s\n", err.Error())
 	} else {
-		c.JSON(http.StatusOK, models.MuteResponse{
+		c.JSON(http.StatusOK, models.Response{
+			Success: true,
+		})
+	}
+}
+
+func UnmuteUser(c *gin.Context) {
+	var input models.UnmuteRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Success: false,
+			Message: "Missing one or more fields " + err.Error(),
+		})
+		return
+	}
+
+	if _, err := DB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error unmuting user",
+		})
+		log.Printf("Error unmuting user: %s\n", err.Error())
+	} else {
+		c.JSON(http.StatusOK, models.Response{
 			Success: true,
 		})
 	}

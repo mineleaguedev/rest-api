@@ -7,6 +7,7 @@ type MuteRequest struct {
 	Admin    string  `json:"admin" binding:"required"`
 }
 
-type MuteResponse struct {
-	Success bool `json:"success"`
+type UnmuteRequest struct {
+	Username string `json:"username" binding:"required"`
+	Admin    string `json:"admin" binding:"required"`
 }
