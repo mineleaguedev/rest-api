@@ -20,6 +20,11 @@ type UserPlaytimeUpdateInput struct {
 	Playtime int64  `json:"playtime" binding:"required"`
 }
 
+type UserLastSeenUpdateInput struct {
+	Username string `json:"username" binding:"required"`
+	LastSeen int64  `json:"lastSeen" binding:"required"`
+}
+
 type User struct {
 	ID       int64   `json:"id"`
 	Username string  `json:"username"`
