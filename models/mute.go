@@ -2,7 +2,7 @@ package models
 
 type MuteRequest struct {
 	Username string  `json:"username" binding:"required"`
-	MuteTo   *int64  `json:"muteTo"`
+	Minutes  *int64  `json:"minutes"`
 	Reason   *string `json:"reason"`
 	Admin    string  `json:"admin" binding:"required"`
 }

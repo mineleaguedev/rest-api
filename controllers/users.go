@@ -12,13 +12,13 @@ import (
 )
 
 func CreateUser(c *gin.Context) {
-	var input models.UserCreateInput
+	var input models.UserCreateRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Printf(input.Username)
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
 		})
+		log.Printf(input.Username)
 		return
 	}
 
@@ -82,7 +82,7 @@ func GetUser(c *gin.Context) {
 	user.LastSeen = lastSeen.Time.Unix()
 
 	// ban info
-	var ban models.Ban
+	var ban models.BanInfo
 	var banTo sql.NullTime
 	if err := DB.QueryRow("SELECT `ban_to`, `reason`, `admin` FROM `bans` WHERE `username` = ? AND `status` = true",
 		username).Scan(&banTo, &ban.Reason, &ban.Admin); err != nil {
@@ -103,7 +103,7 @@ func GetUser(c *gin.Context) {
 	}
 
 	// mute info
-	var mute models.Ban
+	var mute models.BanInfo
 	var muteTo sql.NullTime
 	if err := DB.QueryRow("SELECT `mute_to`, `reason`, `admin` FROM `mutes` WHERE `username` = ? AND `status` = true",
 		username).Scan(&muteTo, &mute.Reason, &mute.Admin); err != nil {
@@ -130,9 +130,8 @@ func GetUser(c *gin.Context) {
 }
 
 func UpdateUserExp(c *gin.Context) {
-	var input models.UserExpUpdateInput
+	var input models.UserUpdateExpRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Printf(input.Username)
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
@@ -140,30 +139,37 @@ func UpdateUserExp(c *gin.Context) {
 		return
 	}
 
-	if _, err := DB.Exec("UPDATE `users` SET `exp` = `exp` + ? WHERE `username` = ?", input.Exp, input.Username); err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusUnprocessableEntity, models.Error{
-				Success: false,
-				Message: "Invalid username",
-			})
-		} else {
+	if res, err := DB.Exec("UPDATE `users` SET `exp` = `exp` + ? WHERE `username` = ?", input.Exp, input.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error updating user exp",
+		})
+		log.Printf("Error updating user exp: %s\n", err.Error())
+	} else {
+		if amount, err := res.RowsAffected(); err != nil {
 			c.JSON(http.StatusInternalServerError, models.Error{
 				Success: false,
-				Message: "Error updating user exp",
+				Message: "Error getting rows affected amount",
 			})
-			log.Printf("Error updating user exp: %s\n", err.Error())
+			log.Printf("Error getting rows affected amount: %s\n", err.Error())
+		} else {
+			if amount <= 0 {
+				c.JSON(http.StatusBadRequest, models.Error{
+					Success: false,
+					Message: "User does not exist",
+				})
+			} else {
+				c.JSON(http.StatusOK, models.UserResponse{
+					Success: true,
+				})
+			}
 		}
-	} else {
-		c.JSON(http.StatusOK, models.UserResponse{
-			Success: true,
-		})
 	}
 }
 
 func UpdateUserRank(c *gin.Context) {
-	var input models.UserRankUpdateInput
+	var input models.UserUpdateRankRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Printf(input.Username)
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
@@ -179,30 +185,37 @@ func UpdateUserRank(c *gin.Context) {
 		}
 	}
 
-	if _, err := DB.Exec("UPDATE `users` SET `rank` = ?, `rank_to` = ? WHERE `username` = ?", input.Rank, rankTo, input.Username); err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusUnprocessableEntity, models.Error{
-				Success: false,
-				Message: "Invalid username",
-			})
-		} else {
+	if res, err := DB.Exec("UPDATE `users` SET `rank` = ?, `rank_to` = ? WHERE `username` = ?", input.Rank, rankTo, input.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error updating user rank",
+		})
+		log.Printf("Error updating user rank: %s\n", err.Error())
+	} else {
+		if amount, err := res.RowsAffected(); err != nil {
 			c.JSON(http.StatusInternalServerError, models.Error{
 				Success: false,
-				Message: "Error updating user rank",
+				Message: "Error getting rows affected amount",
 			})
-			log.Printf("Error updating user rank: %s\n", err.Error())
+			log.Printf("Error getting rows affected amount: %s\n", err.Error())
+		} else {
+			if amount <= 0 {
+				c.JSON(http.StatusBadRequest, models.Error{
+					Success: false,
+					Message: "User does not exist",
+				})
+			} else {
+				c.JSON(http.StatusOK, models.UserResponse{
+					Success: true,
+				})
+			}
 		}
-	} else {
-		c.JSON(http.StatusOK, models.UserResponse{
-			Success: true,
-		})
 	}
 }
 
 func UpdateUserPlaytime(c *gin.Context) {
-	var input models.UserPlaytimeUpdateInput
+	var input models.UserUpdatePlaytimeRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Printf(input.Username)
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
@@ -210,30 +223,37 @@ func UpdateUserPlaytime(c *gin.Context) {
 		return
 	}
 
-	if _, err := DB.Exec("UPDATE `users` SET `playtime` = ? WHERE `username` = ?", input.Playtime, input.Username); err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusUnprocessableEntity, models.Error{
-				Success: false,
-				Message: "Invalid username",
-			})
-		} else {
+	if res, err := DB.Exec("UPDATE `users` SET `playtime` = ? WHERE `username` = ?", input.Playtime, input.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error updating user playtime",
+		})
+		log.Printf("Error updating user playtime: %s\n", err.Error())
+	} else {
+		if amount, err := res.RowsAffected(); err != nil {
 			c.JSON(http.StatusInternalServerError, models.Error{
 				Success: false,
-				Message: "Error updating user playtime",
+				Message: "Error getting rows affected amount",
 			})
-			log.Printf("Error updating user playtime: %s\n", err.Error())
+			log.Printf("Error getting rows affected amount: %s\n", err.Error())
+		} else {
+			if amount <= 0 {
+				c.JSON(http.StatusBadRequest, models.Error{
+					Success: false,
+					Message: "User does not exist",
+				})
+			} else {
+				c.JSON(http.StatusOK, models.UserResponse{
+					Success: true,
+				})
+			}
 		}
-	} else {
-		c.JSON(http.StatusOK, models.UserResponse{
-			Success: true,
-		})
 	}
 }
 
 func UpdateUserLastSeen(c *gin.Context) {
-	var input models.UserLastSeenUpdateInput
+	var input models.UserUpdateLastSeenRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Printf(input.Username)
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
@@ -241,22 +261,30 @@ func UpdateUserLastSeen(c *gin.Context) {
 		return
 	}
 
-	if _, err := DB.Exec("UPDATE `users` SET `last_seen` = ? WHERE `username` = ?", time.Unix(input.LastSeen, 0), input.Username); err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusUnprocessableEntity, models.Error{
-				Success: false,
-				Message: "Invalid username",
-			})
-		} else {
+	if res, err := DB.Exec("UPDATE `users` SET `last_seen` = ? WHERE `username` = ?", time.Unix(input.LastSeen, 0), input.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error updating user last seen",
+		})
+		log.Printf("Error updating user last seen: %s\n", err.Error())
+	} else {
+		if amount, err := res.RowsAffected(); err != nil {
 			c.JSON(http.StatusInternalServerError, models.Error{
 				Success: false,
-				Message: "Error updating user last seen",
+				Message: "Error getting rows affected amount",
 			})
-			log.Printf("Error updating user last seen: %s\n", err.Error())
+			log.Printf("Error getting rows affected amount: %s\n", err.Error())
+		} else {
+			if amount <= 0 {
+				c.JSON(http.StatusBadRequest, models.Error{
+					Success: false,
+					Message: "User does not exist",
+				})
+			} else {
+				c.JSON(http.StatusOK, models.UserResponse{
+					Success: true,
+				})
+			}
 		}
-	} else {
-		c.JSON(http.StatusOK, models.UserResponse{
-			Success: true,
-		})
 	}
 }

@@ -30,9 +30,9 @@ func MuteUser(c *gin.Context) {
 	}
 
 	var muteTo sql.NullTime
-	if input.MuteTo != nil {
+	if input.Minutes != nil {
 		muteTo = sql.NullTime{
-			Time:  time.Unix(*input.MuteTo, 0),
+			Time:  time.Now().Add(time.Duration(*input.Minutes) * time.Minute),
 			Valid: true,
 		}
 	}
@@ -69,15 +69,30 @@ func UnmuteUser(c *gin.Context) {
 		return
 	}
 
-	if _, err := DB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+	if res, err := DB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error unmuting user",
 		})
 		log.Printf("Error unmuting user: %s\n", err.Error())
 	} else {
-		c.JSON(http.StatusOK, models.Response{
-			Success: true,
-		})
+		if amount, err := res.RowsAffected(); err != nil {
+			c.JSON(http.StatusInternalServerError, models.Error{
+				Success: false,
+				Message: "Error getting rows affected amount",
+			})
+			log.Printf("Error getting rows affected amount: %s\n", err.Error())
+		} else {
+			if amount <= 0 {
+				c.JSON(http.StatusBadRequest, models.Error{
+					Success: false,
+					Message: "User is not muted",
+				})
+			} else {
+				c.JSON(http.StatusOK, models.Response{
+					Success: true,
+				})
+			}
+		}
 	}
 }

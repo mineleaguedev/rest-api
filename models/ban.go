@@ -2,7 +2,7 @@ package models
 
 type BanRequest struct {
 	Username string  `json:"username" binding:"required"`
-	BanTo    *int64  `json:"banTo"`
+	Minutes  *int64  `json:"minutes"`
 	Reason   *string `json:"reason"`
 	Admin    string  `json:"admin" binding:"required"`
 }
