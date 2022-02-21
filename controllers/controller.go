@@ -5,8 +5,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var DB *sql.DB
+var GeneralDB *sql.DB
+var MiniGamesDB *sql.DB
 
-func Controller(db *sql.DB) {
-	DB = db
+func Controller(generalDB *sql.DB, miniGamesDB *sql.DB) {
+	GeneralDB = generalDB
+	MiniGamesDB = miniGamesDB
 }

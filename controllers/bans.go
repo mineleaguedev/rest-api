@@ -20,7 +20,7 @@ func BanUser(c *gin.Context) {
 		return
 	}
 
-	if _, err := DB.Exec("UPDATE `bans` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+	if _, err := MiniGamesDB.Exec("UPDATE `bans` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error setting user ban status to false",
@@ -45,7 +45,7 @@ func BanUser(c *gin.Context) {
 		}
 	}
 
-	if _, err := DB.Exec("INSERT INTO `bans` (`username`, `ban_to`, `reason`, `admin`) VALUES (?, ?, ?, ?)",
+	if _, err := MiniGamesDB.Exec("INSERT INTO `bans` (`username`, `ban_to`, `reason`, `admin`) VALUES (?, ?, ?, ?)",
 		input.Username, banTo, reason, input.Admin); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
@@ -69,7 +69,7 @@ func UnbanUser(c *gin.Context) {
 		return
 	}
 
-	if res, err := DB.Exec("UPDATE `bans` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("UPDATE `bans` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error unbanning user",

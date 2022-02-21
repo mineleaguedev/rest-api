@@ -20,7 +20,7 @@ func MuteUser(c *gin.Context) {
 		return
 	}
 
-	if _, err := DB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+	if _, err := MiniGamesDB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error setting user mute status to false",
@@ -45,7 +45,7 @@ func MuteUser(c *gin.Context) {
 		}
 	}
 
-	if _, err := DB.Exec("INSERT INTO `mutes` (`username`, `mute_to`, `reason`, `admin`) VALUES (?, ?, ?, ?)",
+	if _, err := MiniGamesDB.Exec("INSERT INTO `mutes` (`username`, `mute_to`, `reason`, `admin`) VALUES (?, ?, ?, ?)",
 		input.Username, muteTo, reason, input.Admin); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
@@ -69,7 +69,7 @@ func UnmuteUser(c *gin.Context) {
 		return
 	}
 
-	if res, err := DB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("UPDATE `mutes` SET `status` = false WHERE `username` = ?", input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error unmuting user",

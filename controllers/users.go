@@ -22,7 +22,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	if res, err := DB.Exec("INSERT INTO `users` (`username`) VALUES (?)", input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("INSERT INTO `users` (`username`) VALUES (?)", input.Username); err != nil {
 		driverErr, ok := err.(*mysql.MySQLError)
 		if ok && driverErr.Number == 1062 {
 			c.JSON(http.StatusUnprocessableEntity, models.Error{
@@ -59,7 +59,7 @@ func GetUser(c *gin.Context) {
 
 	var rank sql.NullString
 	var lastSeen sql.NullTime
-	if err := DB.QueryRow("SELECT `id`, `exp`, `rank`, `playtime`, `last_seen` FROM `users` WHERE `username` = ?",
+	if err := MiniGamesDB.QueryRow("SELECT `id`, `exp`, `rank`, `playtime`, `last_seen` FROM `users` WHERE `username` = ?",
 		username).Scan(&user.ID, &user.Exp, &rank, &user.Playtime, &lastSeen); err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusUnprocessableEntity, models.Error{
@@ -84,7 +84,7 @@ func GetUser(c *gin.Context) {
 	// ban info
 	var ban models.BanInfo
 	var banTo sql.NullTime
-	if err := DB.QueryRow("SELECT `ban_to`, `reason`, `admin` FROM `bans` WHERE `username` = ? AND `status` = true",
+	if err := MiniGamesDB.QueryRow("SELECT `ban_to`, `reason`, `admin` FROM `bans` WHERE `username` = ? AND `status` = true",
 		username).Scan(&banTo, &ban.Reason, &ban.Admin); err != nil {
 		if err != sql.ErrNoRows {
 			c.JSON(http.StatusInternalServerError, models.Error{
@@ -105,7 +105,7 @@ func GetUser(c *gin.Context) {
 	// mute info
 	var mute models.BanInfo
 	var muteTo sql.NullTime
-	if err := DB.QueryRow("SELECT `mute_to`, `reason`, `admin` FROM `mutes` WHERE `username` = ? AND `status` = true",
+	if err := MiniGamesDB.QueryRow("SELECT `mute_to`, `reason`, `admin` FROM `mutes` WHERE `username` = ? AND `status` = true",
 		username).Scan(&muteTo, &mute.Reason, &mute.Admin); err != nil {
 		if err != sql.ErrNoRows {
 			c.JSON(http.StatusInternalServerError, models.Error{
@@ -139,7 +139,7 @@ func UpdateUserExp(c *gin.Context) {
 		return
 	}
 
-	if res, err := DB.Exec("UPDATE `users` SET `exp` = `exp` + ? WHERE `username` = ?", input.Exp, input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("UPDATE `users` SET `exp` = `exp` + ? WHERE `username` = ?", input.Exp, input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error updating user exp",
@@ -185,7 +185,7 @@ func UpdateUserRank(c *gin.Context) {
 		}
 	}
 
-	if res, err := DB.Exec("UPDATE `users` SET `rank` = ?, `rank_to` = ? WHERE `username` = ?", input.Rank, rankTo, input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("UPDATE `users` SET `rank` = ?, `rank_to` = ? WHERE `username` = ?", input.Rank, rankTo, input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error updating user rank",
@@ -223,7 +223,7 @@ func UpdateUserPlaytime(c *gin.Context) {
 		return
 	}
 
-	if res, err := DB.Exec("UPDATE `users` SET `playtime` = ? WHERE `username` = ?", input.Playtime, input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("UPDATE `users` SET `playtime` = ? WHERE `username` = ?", input.Playtime, input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error updating user playtime",
@@ -261,7 +261,7 @@ func UpdateUserLastSeen(c *gin.Context) {
 		return
 	}
 
-	if res, err := DB.Exec("UPDATE `users` SET `last_seen` = ? WHERE `username` = ?", time.Unix(input.LastSeen, 0), input.Username); err != nil {
+	if res, err := MiniGamesDB.Exec("UPDATE `users` SET `last_seen` = ? WHERE `username` = ?", time.Unix(input.LastSeen, 0), input.Username); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Success: false,
 			Message: "Error updating user last seen",
