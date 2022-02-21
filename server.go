@@ -18,18 +18,31 @@ func main() {
 		log.Fatalf("Error loading env variables: %s", err.Error())
 	}
 
-	db, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
-		os.Getenv("db.username"),
-		os.Getenv("db.password"),
-		os.Getenv("db.host"),
-		os.Getenv("db.port"),
-		os.Getenv("db.dbname")),
+	generalDB, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
+		os.Getenv("generaldb.username"),
+		os.Getenv("generaldb.password"),
+		os.Getenv("generaldb.host"),
+		os.Getenv("generaldb.port"),
+		os.Getenv("generaldb.dbname")),
 	)
 	if err != nil {
-		log.Fatalf("Error connecting to database: %s", err)
+		log.Fatalf("Error connecting to general database: %s", err)
 	}
 
-	controllers.Controller(db)
+	miniGamesDB, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
+		os.Getenv("minigamesdb.username"),
+		os.Getenv("minigamesdb.password"),
+		os.Getenv("minigamesdb.host"),
+		os.Getenv("minigamesdb.port"),
+		os.Getenv("minigamesdb.dbname")),
+	)
+	if err != nil {
+		log.Fatalf("Error connecting to minigames database: %s", err)
+	}
+
+	controllers.Controller(generalDB, miniGamesDB)
+
+	router.POST("/reg", controllers.RegisterUser)
 
 	router.POST("/user", controllers.CreateUser)
 	router.GET("/user/name/:name", controllers.GetUser)
