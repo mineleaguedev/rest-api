@@ -43,6 +43,7 @@ func main() {
 	controllers.Controller(generalDB, miniGamesDB)
 
 	router.POST("/reg", controllers.RegisterUser)
+	router.POST("/auth", controllers.AuthUser)
 
 	router.POST("/user", controllers.CreateUser)
 	router.GET("/user/name/:name", controllers.GetUser)

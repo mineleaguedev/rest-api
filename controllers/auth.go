@@ -100,3 +100,45 @@ func RegisterUser(c *gin.Context) {
 		})
 	}
 }
+
+func AuthUser(c *gin.Context) {
+	var input models.AuthRequest
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Success: false,
+			Message: "Missing one or more fields " + err.Error(),
+		})
+		return
+	}
+
+	var hashedPassword string
+	err := GeneralDB.QueryRow("SELECT `password_hash` FROM `users` WHERE `username` = ?", input.Username).Scan(&hashedPassword)
+	if err != nil && err == sql.ErrNoRows {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Success: false,
+			Message: "User does not exist",
+		})
+		return
+	}
+
+	match, err := argon2id.ComparePasswordAndHash(input.Password, hashedPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Success: false,
+			Message: "Error unhashing password",
+		})
+		log.Printf("Error unhashing password: %s\n", err.Error())
+		return
+	}
+
+	if match {
+		c.JSON(http.StatusOK, models.Response{
+			Success: true,
+		})
+	} else {
+		c.JSON(http.StatusOK, models.Response{
+			Success: false,
+		})
+	}
+}
