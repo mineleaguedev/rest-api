@@ -42,6 +42,9 @@ func main() {
 
 	controllers.Controller(generalDB, miniGamesDB)
 
+	controllers.ConfigureCaptcha(os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
+	router.GET("/reg", controllers.RenderRegForm)
+	router.GET("/auth", controllers.RenderAuthForm)
 	router.POST("/reg", controllers.RegisterUser)
 	router.POST("/auth", controllers.AuthUser)
 

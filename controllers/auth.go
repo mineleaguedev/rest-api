@@ -42,7 +42,7 @@ func validPassword(password string) (sevenOrMore, number, upper, special bool) {
 func RegisterUser(c *gin.Context) {
 	var input models.RegisterRequest
 
-	if err := c.ShouldBindJSON(&input); err != nil {
+	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
@@ -63,6 +63,15 @@ func RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Invalid password",
+		})
+		return
+	}
+
+	response := Client.VerifyToken(input.Captcha)
+	if !response.Success {
+		c.JSON(http.StatusUnauthorized, models.Error{
+			Success: false,
+			Message: "Invalid captcha",
 		})
 		return
 	}
@@ -104,10 +113,19 @@ func RegisterUser(c *gin.Context) {
 func AuthUser(c *gin.Context) {
 	var input models.AuthRequest
 
-	if err := c.ShouldBindJSON(&input); err != nil {
+	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Missing one or more fields " + err.Error(),
+		})
+		return
+	}
+
+	response := Client.VerifyToken(input.Captcha)
+	if !response.Success {
+		c.JSON(http.StatusUnauthorized, models.Error{
+			Success: false,
+			Message: "Invalid captcha",
 		})
 		return
 	}

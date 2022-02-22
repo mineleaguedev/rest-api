@@ -1,12 +1,14 @@
 package models
 
 type RegisterRequest struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Username string `form:"username" binding:"required"`
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
 }
 
 type AuthRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
 }
