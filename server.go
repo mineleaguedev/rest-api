@@ -3,12 +3,16 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/mineleaguedev/rest-api/controllers"
+	"github.com/mineleaguedev/rest-api/systems"
 	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -41,12 +45,56 @@ func main() {
 	}
 
 	controllers.Controller(generalDB, miniGamesDB)
+	systems.System(generalDB)
 
-	controllers.ConfigureCaptcha(os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
-	router.GET("/reg", controllers.RenderRegForm)
-	router.GET("/auth", controllers.RenderAuthForm)
-	router.POST("/reg", controllers.RegisterUser)
-	router.POST("/auth", controllers.AuthUser)
+	systems.ConfigureCaptcha(os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
+
+	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
+		Realm:       "mineleague jwt",
+		Key:         []byte(os.Getenv("jwt.secret.key")),
+		Timeout:     15 * time.Minute,
+		MaxRefresh:  30 * 24 * time.Hour,
+		IdentityKey: "username",
+
+		PayloadFunc:     systems.Payload,
+		IdentityHandler: systems.Identify,
+		Authenticator:   systems.Authenticate,
+		Authorizator:    systems.Authorize,
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
+
+		SendCookie:     true,
+		SecureCookie:   false,
+		CookieHTTPOnly: true,
+		CookieDomain:   "localhost:8080",
+		CookieName:     "token",
+		TokenLookup:    "cookie:token",
+		CookieSameSite: http.SameSiteDefaultMode,
+
+		TimeFunc: time.Now,
+	})
+	if err != nil {
+		log.Fatalf("Error initializing jwt: %s", err.Error())
+	}
+	if errInit := authMiddleware.MiddlewareInit(); errInit != nil {
+		log.Fatalf("Error initializing systems middleware: %s", err.Error())
+	}
+
+	router.POST("/login", authMiddleware.LoginHandler)
+	router.POST("/reg", systems.RegisterUser)
+
+	auth := router.Group("/auth")
+	auth.GET("/reg", systems.RenderRegForm)
+	auth.GET("/auth", systems.RenderAuthForm)
+	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	auth.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.GET("/hello", systems.HelloHandler)
+	}
 
 	router.POST("/user", controllers.CreateUser)
 	router.GET("/user/name/:name", controllers.GetUser)

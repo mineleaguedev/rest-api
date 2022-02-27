@@ -1,4 +1,4 @@
-package controllers
+package systems
 
 import (
 	"database/sql"
@@ -67,7 +67,7 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	response := Client.VerifyToken(input.Captcha)
+	response := CaptchaClient.VerifyToken(input.Captcha)
 	if !response.Success {
 		c.JSON(http.StatusUnauthorized, models.Error{
 			Success: false,
@@ -106,57 +106,6 @@ func RegisterUser(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, models.Response{
 			Success: true,
-		})
-	}
-}
-
-func AuthUser(c *gin.Context) {
-	var input models.AuthRequest
-
-	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Success: false,
-			Message: "Missing one or more fields " + err.Error(),
-		})
-		return
-	}
-
-	response := Client.VerifyToken(input.Captcha)
-	if !response.Success {
-		c.JSON(http.StatusUnauthorized, models.Error{
-			Success: false,
-			Message: "Invalid captcha",
-		})
-		return
-	}
-
-	var hashedPassword string
-	err := GeneralDB.QueryRow("SELECT `password_hash` FROM `users` WHERE `username` = ?", input.Username).Scan(&hashedPassword)
-	if err != nil && err == sql.ErrNoRows {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Success: false,
-			Message: "User does not exist",
-		})
-		return
-	}
-
-	match, err := argon2id.ComparePasswordAndHash(input.Password, hashedPassword)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Success: false,
-			Message: "Error unhashing password",
-		})
-		log.Printf("Error unhashing password: %s\n", err.Error())
-		return
-	}
-
-	if match {
-		c.JSON(http.StatusOK, models.Response{
-			Success: true,
-		})
-	} else {
-		c.JSON(http.StatusOK, models.Response{
-			Success: false,
 		})
 	}
 }

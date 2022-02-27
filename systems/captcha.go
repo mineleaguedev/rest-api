@@ -1,4 +1,4 @@
-package controllers
+package systems
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,15 +8,15 @@ import (
 )
 
 var (
-	SiteKey  string
-	Client   *hcaptcha.Client
-	RegForm  *template.Template
-	AuthForm *template.Template
+	SiteKey       string
+	CaptchaClient *hcaptcha.Client
+	RegForm       *template.Template
+	AuthForm      *template.Template
 )
 
 func ConfigureCaptcha(siteKey, secretKey string) {
 	SiteKey = siteKey
-	Client = hcaptcha.New(secretKey)
+	CaptchaClient = hcaptcha.New(secretKey)
 	RegForm = template.Must(template.ParseFiles("./forms/reg_form.html"))
 	AuthForm = template.Must(template.ParseFiles("./forms/auth_form.html"))
 }
@@ -34,7 +34,7 @@ func RenderAuthForm(c *gin.Context) {
 	if err := AuthForm.Execute(c.Writer, map[string]string{
 		"SiteKey": SiteKey,
 	}); err != nil {
-		log.Printf("Error rendering auth form: %s\n", err.Error())
+		log.Printf("Error rendering systems form: %s\n", err.Error())
 		return
 	}
 }
