@@ -20,17 +20,14 @@ func validUsername(username string) bool {
 	return matched
 }
 
-func validPassword(password string) (sevenOrMore, number, upper, special bool) {
+func validPassword(password string) (sevenOrMore, number bool) {
 	letters := 0
 	for _, c := range password {
 		switch {
 		case unicode.IsNumber(c):
 			number = true
 		case unicode.IsUpper(c):
-			upper = true
 			letters++
-		case unicode.IsPunct(c) || unicode.IsSymbol(c):
-			special = true
 		case unicode.IsLetter(c) || c == ' ':
 			letters++
 		}
@@ -58,8 +55,8 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	var sevenOrMore, number, upper, special = validPassword(input.Password)
-	if !sevenOrMore || !number || !upper || !special {
+	var sevenOrMore, number = validPassword(input.Password)
+	if !sevenOrMore || !number {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Success: false,
 			Message: "Invalid password",
