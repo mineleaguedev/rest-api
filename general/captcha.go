@@ -1,4 +1,4 @@
-package systems
+package general
 
 import (
 	"github.com/gin-gonic/gin"
@@ -34,7 +34,7 @@ func RenderAuthForm(c *gin.Context) {
 	if err := AuthForm.Execute(c.Writer, map[string]string{
 		"SiteKey": SiteKey,
 	}); err != nil {
-		log.Printf("Error rendering systems form: %s\n", err.Error())
+		log.Printf("Error rendering auth form: %s\n", err.Error())
 		return
 	}
 }
