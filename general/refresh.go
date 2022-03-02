@@ -1,7 +1,6 @@
 package general
 
 import (
-	ginJwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"log"
@@ -9,36 +8,18 @@ import (
 	"time"
 )
 
-func HelloHandler(c *gin.Context) {
-	claims := ginJwt.ExtractClaims(c)
-	user, _ := c.Get(JWTMiddleware.IdentityKey)
-	c.JSON(200, gin.H{
-		"id":       user.(*User).ID,
-		"username": claims["username"],
-	})
-}
-
 func RefreshHandler(c *gin.Context) {
 	userId, tokenString, expire, err := refreshToken(c)
 	if err != nil {
-		unauthorized(c, http.StatusUnauthorized, JWTMiddleware.HTTPStatusMessageFunc(err, c))
+		handleErr(c, http.StatusUnauthorized, err)
 		return
 	}
 
 	refreshResponse(c, http.StatusOK, userId, tokenString, expire)
 }
 
-func unauthorized(c *gin.Context, code int, message string) {
-	c.Header("WWW-Authenticate", "JWT realm="+JWTMiddleware.Realm)
-	if !JWTMiddleware.DisabledAbort {
-		c.Abort()
-	}
-
-	JWTMiddleware.Unauthorized(c, code, message)
-}
-
 func checkIfTokenExpire(c *gin.Context) (jwt.MapClaims, error) {
-	token, err := JWTMiddleware.ParseToken(c)
+	token, err := parseToken(c)
 	if err != nil {
 		validationErr, ok := err.(*jwt.ValidationError)
 		if !ok || validationErr.Errors != jwt.ValidationErrorExpired {
@@ -48,26 +29,18 @@ func checkIfTokenExpire(c *gin.Context) (jwt.MapClaims, error) {
 
 	claims := token.Claims.(jwt.MapClaims)
 
-	origIat := int64(claims["orig_iat"].(float64))
+	iat := int64(claims["iat"].(float64))
 	exp := int64(claims["exp"].(float64))
 
-	if origIat > JWTMiddleware.TimeFunc().Add(-JWTMiddleware.Timeout).Unix() {
+	if iat > time.Now().Add(-Middleware.AccessTokenTime).Unix() {
 		return nil, ErrNotExpiredAccessToken
 	}
 
-	if exp > JWTMiddleware.TimeFunc().Unix() {
+	if exp > time.Now().Unix() {
 		return nil, ErrExpiredRefreshToken
 	}
 
 	return claims, nil
-}
-
-func clientIp(c *gin.Context) string {
-	clientIp := c.ClientIP()
-	if clientIp == "::1" {
-		clientIp = "127.0.0.1"
-	}
-	return clientIp
 }
 
 func refreshToken(c *gin.Context) (float64, string, time.Time, error) {
@@ -93,52 +66,25 @@ func refreshToken(c *gin.Context) (float64, string, time.Time, error) {
 		return 0, "", time.Now(), ErrChangedClientIp
 	}
 
-	// Create the token
-	newToken := jwt.New(jwt.GetSigningMethod(JWTMiddleware.SigningAlgorithm))
-	newClaims := newToken.Claims.(jwt.MapClaims)
-
-	for key := range claims {
-		newClaims[key] = claims[key]
-	}
-
-	expire := JWTMiddleware.TimeFunc().Add(JWTMiddleware.Timeout)
-	newClaims["exp"] = expire.Unix()
-	newClaims["orig_iat"] = JWTMiddleware.TimeFunc().Unix()
-	tokenString, err := newToken.SignedString(JWTMiddleware.Key)
+	// create token
+	newToken, expire, err := createToken(claims)
 	if err != nil {
 		return 0, "", time.Now(), err
 	}
 
-	return userId, tokenString, expire, nil
+	return userId, newToken, expire, nil
 }
 
 func refreshResponse(c *gin.Context, _ int, userId float64, token string, expire time.Time) {
 	if _, err := DB.Exec("INSERT INTO `sessions` (`token`, `userId`, `ip`, `expires_at`) VALUES (?, ?, INET_ATON(?), ?)",
 		token, userId, clientIp(c), expire); err != nil {
-		handleErr(c, http.StatusInternalServerError, ErrAddingSessionInfo)
 		log.Printf(ErrAddingSessionInfo.Error()+": %s\n", err.Error())
+		handleErr(c, http.StatusInternalServerError, ErrAddingSessionInfo)
 		return
 	}
 
 	// set cookie
-	if JWTMiddleware.SendCookie {
-		expireCookie := JWTMiddleware.TimeFunc().Add(JWTMiddleware.CookieMaxAge)
-		maxAge := int(expireCookie.Unix() - time.Now().Unix())
-
-		if JWTMiddleware.CookieSameSite != 0 {
-			c.SetSameSite(JWTMiddleware.CookieSameSite)
-		}
-
-		c.SetCookie(
-			JWTMiddleware.CookieName,
-			token,
-			maxAge,
-			"/",
-			JWTMiddleware.CookieDomain,
-			JWTMiddleware.SecureCookie,
-			JWTMiddleware.CookieHTTPOnly,
-		)
-	}
+	sendCookie(c, token)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":   http.StatusOK,
