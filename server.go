@@ -8,7 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/mineleaguedev/rest-api/controllers"
-	"github.com/mineleaguedev/rest-api/systems"
+	"github.com/mineleaguedev/rest-api/general"
 	"log"
 	"net/http"
 	"os"
@@ -44,11 +44,6 @@ func main() {
 		log.Fatalf("Error connecting to minigames database: %s", err)
 	}
 
-	controllers.Controller(generalDB, miniGamesDB)
-	systems.System(generalDB)
-
-	systems.ConfigureCaptcha(os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
-
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "mineleague jwt",
 		Key:         []byte(os.Getenv("jwt.secret.key")),
@@ -56,10 +51,12 @@ func main() {
 		MaxRefresh:  30 * 24 * time.Hour,
 		IdentityKey: "username",
 
-		PayloadFunc:     systems.Payload,
-		IdentityHandler: systems.Identify,
-		Authenticator:   systems.Authenticate,
-		Authorizator:    systems.Authorize,
+		Authenticator: general.Authenticate,
+		PayloadFunc:   general.Payload,
+		LoginResponse: general.LoginResponse,
+
+		IdentityHandler: general.Identify,
+		Authorizator:    general.Authorize,
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
 				"code":    code,
@@ -73,6 +70,7 @@ func main() {
 		CookieDomain:   "localhost:8080",
 		CookieName:     "token",
 		TokenLookup:    "cookie:token",
+		CookieMaxAge:   30 * 24 * time.Hour,
 		CookieSameSite: http.SameSiteDefaultMode,
 
 		TimeFunc: time.Now,
@@ -81,19 +79,22 @@ func main() {
 		log.Fatalf("Error initializing jwt: %s", err.Error())
 	}
 	if errInit := authMiddleware.MiddlewareInit(); errInit != nil {
-		log.Fatalf("Error initializing systems middleware: %s", err.Error())
+		log.Fatalf("Error initializing middleware: %s", err.Error())
 	}
 
-	router.POST("/login", authMiddleware.LoginHandler)
-	router.POST("/reg", systems.RegisterUser)
+	controllers.Controller(generalDB, miniGamesDB)
+	general.Setup(generalDB, authMiddleware, os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
 
 	auth := router.Group("/auth")
-	auth.GET("/reg", systems.RenderRegForm)
-	auth.GET("/auth", systems.RenderAuthForm)
-	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	auth.GET("/reg", general.RenderRegForm)
+	auth.GET("/auth", general.RenderAuthForm)
+	auth.POST("/reg", general.RegisterUser)
+	auth.POST("/auth", authMiddleware.LoginHandler)
+
+	auth.GET("/refresh", general.RefreshHandler)
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
-		auth.GET("/hello", systems.HelloHandler)
+		auth.GET("/hello", general.HelloHandler)
 	}
 
 	router.POST("/user", controllers.CreateUser)
