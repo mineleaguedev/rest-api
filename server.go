@@ -3,12 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/mineleaguedev/rest-api/controllers"
 	"github.com/mineleaguedev/rest-api/general"
+	"github.com/mineleaguedev/rest-api/models"
 	"log"
 	"net/http"
 	"os"
@@ -44,57 +44,38 @@ func main() {
 		log.Fatalf("Error connecting to minigames database: %s", err)
 	}
 
-	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "mineleague jwt",
-		Key:         []byte(os.Getenv("jwt.secret.key")),
-		Timeout:     15 * time.Minute,
-		MaxRefresh:  30 * 24 * time.Hour,
-		IdentityKey: "username",
-
-		Authenticator: general.Authenticate,
-		PayloadFunc:   general.Payload,
-		LoginResponse: general.LoginResponse,
-
-		IdentityHandler: general.Identify,
-		Authorizator:    general.Authorize,
-		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(code, gin.H{
-				"code":    code,
-				"message": message,
-			})
-		},
+	middleware := models.JWTMiddleware{
+		Realm:            "mineleague jwt",
+		SigningAlgorithm: "HS256",
+		Key:              []byte(os.Getenv("jwt.secret.key")),
+		AccessTokenTime:  1 * time.Minute,
+		RefreshTokenTime: 30 * 24 * time.Hour,
+		IdentityKey:      "username",
+		TokenLookup:      "cookie:token",
+		TokenHeadName:    "Bearer",
 
 		SendCookie:     true,
+		CookieMaxAge:   30 * 24 * time.Hour,
 		SecureCookie:   false,
 		CookieHTTPOnly: true,
 		CookieDomain:   "localhost:8080",
 		CookieName:     "token",
-		TokenLookup:    "cookie:token",
-		CookieMaxAge:   30 * 24 * time.Hour,
 		CookieSameSite: http.SameSiteDefaultMode,
-
-		TimeFunc: time.Now,
-	})
-	if err != nil {
-		log.Fatalf("Error initializing jwt: %s", err.Error())
-	}
-	if errInit := authMiddleware.MiddlewareInit(); errInit != nil {
-		log.Fatalf("Error initializing middleware: %s", err.Error())
 	}
 
 	controllers.Controller(generalDB, miniGamesDB)
-	general.Setup(generalDB, authMiddleware, os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
+	general.Setup(generalDB, middleware, os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
 
 	auth := router.Group("/auth")
 	auth.GET("/reg", general.RenderRegForm)
 	auth.GET("/auth", general.RenderAuthForm)
-	auth.POST("/reg", general.RegisterUser)
-	auth.POST("/auth", authMiddleware.LoginHandler)
+	auth.POST("/reg", general.RegHandler)
+	auth.POST("/auth", general.AuthHandler)
 
 	auth.GET("/refresh", general.RefreshHandler)
-	auth.Use(authMiddleware.MiddlewareFunc())
+	auth.Use(general.MiddlewareFunc())
 	{
-		auth.GET("/hello", general.HelloHandler)
+		auth.GET("/logout", general.LogoutHandler)
 	}
 
 	router.POST("/user", controllers.CreateUser)
