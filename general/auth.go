@@ -3,7 +3,6 @@ package general
 import (
 	"database/sql"
 	"github.com/alexedwards/argon2id"
-	ginJwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-jwt/jwt/v4"
@@ -13,52 +12,71 @@ import (
 	"time"
 )
 
-func Authenticate(c *gin.Context) (interface{}, error) {
+func AuthHandler(c *gin.Context) {
+	data, httpCode, err := authenticate(c)
+	if err != nil {
+		handleErr(c, httpCode, ErrAddingSessionInfo)
+		return
+	}
+
+	// create token
+	token, expire, err := createToken(getPayload(data))
+	if err != nil {
+		log.Printf(ErrFailedTokenCreation.Error()+": %s\n", err.Error())
+		handleErr(c, http.StatusInternalServerError, ErrFailedTokenCreation)
+		return
+	}
+
+	authResponse(c, http.StatusOK, token, expire)
+}
+
+func authenticate(c *gin.Context) (interface{}, int, error) {
 	var input models.AuthRequest
 
 	if err := c.ShouldBind(&input); err != nil {
-		return nil, ErrMissingAuthValues
+		return nil, http.StatusBadRequest, ErrMissingAuthValues
 	}
 
 	if response := CaptchaClient.VerifyToken(input.Captcha); !response.Success {
-		return nil, ErrInvalidCaptcha
+		return nil, http.StatusBadRequest, ErrInvalidCaptcha
 	}
 
 	var id float64
 	var hashedPassword string
 	err := DB.QueryRow("SELECT `id`, `password_hash` FROM `users` WHERE `username` = ?", input.Username).Scan(&id, &hashedPassword)
 	if err != nil && err == sql.ErrNoRows {
-		return nil, ErrUserDoesNotExist
+		return nil, http.StatusBadRequest, ErrUserDoesNotExist
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(input.Password, hashedPassword)
 	if err != nil {
-		return nil, ErrUnhashingPassword
+		log.Printf(ErrUnhashingPassword.Error()+": %s\n", err.Error())
+		return nil, http.StatusInternalServerError, ErrUnhashingPassword
 	}
 
 	if !match {
-		return nil, ErrUnknown
+		return nil, http.StatusBadRequest, ErrWrongUsernameOrPassword
 	}
 
 	return &User{
 		ID:       id,
 		Username: input.Username,
-	}, nil
+	}, http.StatusOK, nil
 }
 
-func Payload(data interface{}) ginJwt.MapClaims {
+func getPayload(data interface{}) jwt.MapClaims {
 	if v, ok := data.(*User); ok {
-		return ginJwt.MapClaims{
+		return jwt.MapClaims{
 			"id":       v.ID,
 			"username": v.Username,
 		}
 	}
-	return ginJwt.MapClaims{}
+	return jwt.MapClaims{}
 }
 
-func extractClaims(tokenStr string) (jwt.MapClaims, bool, error) {
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		return JWTMiddleware.Key, nil
+func extractClaims(tokenString string) (jwt.MapClaims, bool, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return Middleware.Key, nil
 	})
 	if err != nil {
 		return nil, false, err
@@ -90,21 +108,15 @@ func getCountOfSessions(userId float64) (int, int, error) {
 	return count, http.StatusOK, nil
 }
 
-func LoginResponse(c *gin.Context, _ int, token string, expire time.Time) {
+func authResponse(c *gin.Context, _ int, token string, expire time.Time) {
 	claims, ok, err := extractClaims(token)
-
 	if !ok && err != nil {
-		handleErr(c, http.StatusInternalServerError, ErrExtractingClaims)
 		log.Printf(ErrExtractingClaims.Error()+": %s\n", err.Error())
+		handleErr(c, http.StatusInternalServerError, ErrExtractingClaims)
 		return
 	}
 
 	userId := claims["id"].(float64)
-
-	ip := c.ClientIP()
-	if ip == "::1" {
-		ip = "127.0.0.1"
-	}
 
 	sessionCount, httpCode, err := getCountOfSessions(userId)
 	if err != nil {
@@ -114,18 +126,22 @@ func LoginResponse(c *gin.Context, _ int, token string, expire time.Time) {
 
 	if sessionCount >= 5 {
 		if _, err := DB.Exec("DELETE FROM `sessions` WHERE `userId` = ?", userId); err != nil {
-			handleErr(c, http.StatusInternalServerError, ErrDeletingSessionInfo)
 			log.Printf(ErrDeletingSessionInfo.Error()+": %s\n", err.Error())
+			handleErr(c, http.StatusInternalServerError, ErrDeletingSessionInfo)
 			return
 		}
 	}
 
+	ip := clientIp(c)
 	if _, err := DB.Exec("INSERT INTO `sessions` (`token`, `userId`, `ip`, `expires_at`) VALUES (?, ?, INET_ATON(?), ?)",
 		token, userId, ip, expire); err != nil {
-		handleErr(c, http.StatusInternalServerError, ErrAddingSessionInfo)
 		log.Printf(ErrAddingSessionInfo.Error()+": %s\n", err.Error())
+		handleErr(c, http.StatusInternalServerError, ErrAddingSessionInfo)
 		return
 	}
+
+	// set cookie
+	sendCookie(c, token)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":   http.StatusOK,

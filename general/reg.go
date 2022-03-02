@@ -12,7 +12,7 @@ import (
 	"unicode"
 )
 
-func RegisterUser(c *gin.Context) {
+func RegHandler(c *gin.Context) {
 	httpCode, err := registerUser(c)
 	if err != nil {
 		handleErr(c, httpCode, err)
