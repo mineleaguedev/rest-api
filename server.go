@@ -60,7 +60,7 @@ func main() {
 		CookieHTTPOnly: true,
 		CookieDomain:   "localhost:8080",
 		CookieName:     "token",
-		CookieSameSite: http.SameSiteDefaultMode,
+		CookieSameSite: http.SameSiteStrictMode,
 	}
 
 	controllers.Controller(generalDB, miniGamesDB)
