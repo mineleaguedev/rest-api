@@ -9,11 +9,11 @@ type JWTMiddleware struct {
 	// Realm name to display to the user
 	Realm string
 
-	// signing algorithm - possible values are HS256, HS384, HS512, RS256, RS384 or RS512
-	SigningAlgorithm string
+	// Access token secret key
+	AccessTokenKey []byte
 
-	// Secret key used for signing
-	Key []byte
+	// Refresh token secret key
+	RefreshTokenKey []byte
 
 	// Duration that an access token is valid
 	AccessTokenTime time.Duration

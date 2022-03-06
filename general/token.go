@@ -1,92 +1,98 @@
 package general
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/twinj/uuid"
+	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
-func jwtFromHeader(c *gin.Context, key string) (string, error) {
-	authHeader := c.Request.Header.Get(key)
+func createToken(userId int64) (*TokenDetails, error) {
+	td := TokenDetails{}
+	td.AtExpires = time.Now().Add(Middleware.AccessTokenTime).Unix()
+	td.AccessUuid = uuid.NewV4().String()
 
-	if authHeader == "" {
-		return "", ErrEmptyAuthHeader
-	}
+	td.RtExpires = time.Now().Add(Middleware.RefreshTokenTime).Unix()
+	td.RefreshUuid = uuid.NewV4().String()
 
-	parts := strings.SplitN(authHeader, " ", 2)
-	if !(len(parts) == 2 && parts[0] == Middleware.TokenHeadName) {
-		return "", ErrInvalidAuthHeader
-	}
-
-	return parts[1], nil
-}
-
-func jwtFromQuery(c *gin.Context, key string) (string, error) {
-	token := c.Query(key)
-
-	if token == "" {
-		return "", ErrEmptyQueryToken
-	}
-
-	return token, nil
-}
-
-func jwtFromCookie(c *gin.Context, key string) (string, error) {
-	cookie, _ := c.Cookie(key)
-
-	if cookie == "" {
-		return "", ErrEmptyCookieToken
-	}
-
-	return cookie, nil
-}
-
-func jwtFromParam(c *gin.Context, key string) (string, error) {
-	token := c.Param(key)
-
-	if token == "" {
-		return "", ErrEmptyParamToken
-	}
-
-	return token, nil
-}
-
-func parseToken(c *gin.Context) (*jwt.Token, error) {
-	var token string
 	var err error
 
-	methods := strings.Split(Middleware.TokenLookup, ",")
-	for _, method := range methods {
-		if len(token) > 0 {
-			break
-		}
-		parts := strings.Split(strings.TrimSpace(method), ":")
-		k := strings.TrimSpace(parts[0])
-		v := strings.TrimSpace(parts[1])
-		switch k {
-		case "header":
-			token, err = jwtFromHeader(c, v)
-		case "query":
-			token, err = jwtFromQuery(c, v)
-		case "cookie":
-			token, err = jwtFromCookie(c, v)
-		case "param":
-			token, err = jwtFromParam(c, v)
-		}
+	atClaims := jwt.MapClaims{
+		"access_uuid": td.AccessUuid,
+		"id":          userId,
+		"exp":         td.AtExpires,
 	}
-
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	td.AccessToken, err = at.SignedString(Middleware.AccessTokenKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if jwt.GetSigningMethod(Middleware.SigningAlgorithm) != t.Method {
-			return nil, ErrInvalidSigningAlgorithm
+	rtClaims := jwt.MapClaims{
+		"refresh_uuid": td.RefreshUuid,
+		"id":           userId,
+		"exp":          td.RtExpires,
+	}
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	td.RefreshToken, err = rt.SignedString(Middleware.RefreshTokenKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &td, nil
+}
+
+func extractToken(r *http.Request) string {
+	bearerToken := r.Header.Get("Authorization")
+	strArr := strings.Split(bearerToken, " ")
+	if len(strArr) == 2 {
+		return strArr[1]
+	}
+	return ""
+}
+
+func verifyToken(r *http.Request) (*jwt.Token, error) {
+	tokenString := extractToken(r)
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-
-		// save token string if valid
-		c.Set("JWT_TOKEN", token)
-
-		return Middleware.Key, nil
+		return Middleware.AccessTokenKey, nil
 	})
+	if err != nil {
+		return nil, ErrInvalidAccessToken
+	}
+
+	return token, nil
+}
+
+func extractTokenMetadata(r *http.Request) (*AccessDetails, error) {
+	token, err := verifyToken(r)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, ErrExpiredAccessToken
+	}
+
+	accessUuid, ok := claims["access_uuid"].(string)
+	if !ok {
+		return nil, ErrAccessTokenUuidNotExists
+	}
+
+	userId, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["id"]), 10, 64)
+	if err != nil {
+		return nil, ErrAccessTokenUserIdNotExists
+	}
+
+	return &AccessDetails{
+		AccessUuid: accessUuid,
+		UserId:     userId,
+	}, nil
 }
