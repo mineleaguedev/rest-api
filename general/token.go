@@ -14,7 +14,6 @@ func createToken(userId int64) (*TokenDetails, error) {
 	td := TokenDetails{}
 	td.AtExpires = time.Now().Add(Middleware.AccessTokenTime).Unix()
 	td.AccessUuid = uuid.NewV4().String()
-
 	td.RtExpires = time.Now().Add(Middleware.RefreshTokenTime).Unix()
 	td.RefreshUuid = uuid.NewV4().String()
 

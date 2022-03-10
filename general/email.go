@@ -4,6 +4,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/spf13/viper"
+	"strings"
 )
 
 var (
@@ -24,9 +26,23 @@ var (
 
 func SetupEmail(client *ses.SES) {
 	emailClient = client
+
+	regFrom = viper.GetString("email.reg.from")
+	regSubject = viper.GetString("email.reg.subject")
+	regHtmlBody = viper.GetString("email.reg.htmlBody")
+	regTextBody = viper.GetString("email.reg.textBody")
+	regCharSet = viper.GetString("email.reg.charSet")
+
+	passResetFrom = viper.GetString("email.passReset.from")
+	passResetSubject = viper.GetString("email.passReset.subject")
+	passResetHtmlBody = viper.GetString("email.passReset.htmlBody")
+	passResetTextBody = viper.GetString("email.passReset.textBody")
+	passResetCharSet = viper.GetString("email.passReset.charSet")
 }
 
-func sendRegEmail(to string) error {
+func sendRegEmail(to, token string) error {
+	htmlBody := strings.Replace(regHtmlBody, "%token%", token, 1)
+
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
@@ -38,7 +54,7 @@ func sendRegEmail(to string) error {
 			Body: &ses.Body{
 				Html: &ses.Content{
 					Charset: aws.String(regCharSet),
-					Data:    aws.String(regHtmlBody),
+					Data:    aws.String(htmlBody),
 				},
 				Text: &ses.Content{
 					Charset: aws.String(regCharSet),
@@ -65,7 +81,9 @@ func sendRegEmail(to string) error {
 	return nil
 }
 
-func sendPassResetEmail(to string) error {
+func sendPassResetEmail(to, token string) error {
+	htmlBody := strings.Replace(passResetHtmlBody, "%token%", token, 1)
+
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
@@ -77,7 +95,7 @@ func sendPassResetEmail(to string) error {
 			Body: &ses.Body{
 				Html: &ses.Content{
 					Charset: aws.String(passResetCharSet),
-					Data:    aws.String(passResetHtmlBody),
+					Data:    aws.String(htmlBody),
 				},
 				Text: &ses.Content{
 					Charset: aws.String(passResetCharSet),

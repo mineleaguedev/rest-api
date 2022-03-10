@@ -32,8 +32,8 @@ func AuthHandler(c *gin.Context) {
 		return
 	}
 
-	if err := saveSession(*userId, td); err != nil {
-		handleInternalErr(c, http.StatusInternalServerError, ErrSavingTokenSession, err)
+	if err := saveAuthSession(*userId, td); err != nil {
+		handleInternalErr(c, http.StatusInternalServerError, ErrSavingAuthSession, err)
 		return
 	}
 
@@ -51,7 +51,7 @@ func authenticate(c *gin.Context) (*int64, int, error) {
 		return nil, http.StatusBadRequest, ErrMissingAuthValues
 	}
 
-	if response := CaptchaClient.VerifyToken(input.Captcha); !response.Success {
+	if response := captchaClient.VerifyToken(input.Captcha); !response.Success {
 		return nil, http.StatusBadRequest, ErrInvalidCaptcha
 	}
 

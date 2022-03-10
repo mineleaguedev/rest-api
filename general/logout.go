@@ -13,7 +13,7 @@ func LogoutHandler(c *gin.Context) {
 	}
 
 	if deleted, err := deleteSession(accessDetails.AccessUuid); err != nil || deleted == 0 {
-		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingTokenSession, err)
+		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingSession, err)
 		return
 	}
 

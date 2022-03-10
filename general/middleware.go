@@ -14,9 +14,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := getSession(accessDetails)
+		userId, err := getAuthSession(accessDetails)
 		if err != nil {
-			handleInternalErr(c, http.StatusInternalServerError, ErrGettingTokenSession, err)
+			handleInternalErr(c, http.StatusInternalServerError, ErrGettingAuthSession, err)
 			c.Abort()
 			return
 		}

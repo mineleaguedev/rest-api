@@ -21,6 +21,12 @@ type JWTMiddleware struct {
 	// Duration that a refresh token is valid
 	RefreshTokenTime time.Duration
 
+	// Time that a registration token is valid
+	RegTokenTime int64
+
+	// Duration that a password reset token is valid
+	PassResetTokenTime time.Duration
+
 	// Set the identity key
 	IdentityKey string
 

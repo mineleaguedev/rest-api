@@ -1,7 +1,9 @@
 package general
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -20,6 +22,31 @@ func RegHandler(c *gin.Context) {
 	}
 
 	c.JSON(httpCode, models.Response{
+		Success: true,
+	})
+}
+
+func ConfirmRegHandler(c *gin.Context) {
+	token := c.Param("token")
+
+	regInfo, err := getRegSession(token)
+	if err != nil {
+		handleInternalErr(c, http.StatusInternalServerError, ErrGettingRegSession, err)
+		return
+	}
+
+	if deleted, err := deleteSession(token); err != nil || deleted == 0 {
+		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingSession, err)
+		return
+	}
+
+	if _, err := DB.Exec("INSERT INTO `users` (`username`, `email`, `password_hash`) VALUES (?, ?, ?)",
+		regInfo.Username, regInfo.Email, regInfo.HashedPassword); err != nil {
+		handleInternalErr(c, http.StatusInternalServerError, ErrRegUser, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, models.Response{
 		Success: true,
 	})
 }
@@ -48,6 +75,14 @@ func validPassword(password string) (sevenOrMore, number bool) {
 	return
 }
 
+func generateToken(length int) string {
+	b := make([]byte, length)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
+}
+
 func registerUser(c *gin.Context) (int, error) {
 	var input models.RegisterRequest
 
@@ -63,7 +98,7 @@ func registerUser(c *gin.Context) (int, error) {
 		return http.StatusBadRequest, ErrInvalidPassword
 	}
 
-	if response := CaptchaClient.VerifyToken(input.Captcha); !response.Success {
+	if response := captchaClient.VerifyToken(input.Captcha); !response.Success {
 		return http.StatusBadRequest, ErrInvalidCaptcha
 	}
 
@@ -79,10 +114,16 @@ func registerUser(c *gin.Context) (int, error) {
 		return http.StatusInternalServerError, ErrHashingPassword
 	}
 
-	if _, err := DB.Exec("INSERT INTO `users` (`username`, `email`, `password_hash`) VALUES (?, ?, ?)",
-		input.Username, input.Email, hashedPassword); err != nil {
-		log.Printf(ErrRegUser.Error()+": %s\n", err.Error())
-		return http.StatusInternalServerError, ErrRegUser
+	regToken := generateToken(40)
+
+	if err := saveRegSession(regToken, input.Username, input.Email, hashedPassword); err != nil {
+		log.Printf(ErrSavingRegSession.Error()+": %s\n", err.Error())
+		return http.StatusInternalServerError, ErrSavingRegSession
+	}
+
+	if err := sendRegEmail(input.Email, regToken); err != nil {
+		log.Printf(ErrSendingEmail.Error()+": %s\n", err.Error())
+		return http.StatusInternalServerError, ErrSendingEmail
 	}
 
 	return http.StatusOK, nil

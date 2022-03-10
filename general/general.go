@@ -4,30 +4,35 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v7"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/kataras/hcaptcha"
 	"github.com/mineleaguedev/rest-api/models"
-	"html/template"
 	"log"
 )
 
 var (
-	ErrMissingAuthValues           = errors.New("missing auth values")
-	ErrMissingRegValues            = errors.New("missing reg values")
-	ErrInvalidUsername             = errors.New("invalid username")
-	ErrInvalidPassword             = errors.New("invalid password")
-	ErrInvalidCaptcha              = errors.New("invalid captcha")
-	ErrUserAlreadyExists           = errors.New("username or email already exists")
-	ErrUserDoesNotExist            = errors.New("user does not exist")
-	ErrHashingPassword             = errors.New("error hashing password")
-	ErrUnhashingPassword           = errors.New("error unhashing password")
-	ErrWrongUsernameOrPassword     = errors.New("wrong username or password")
-	ErrRegUser                     = errors.New("error registering user")
-	ErrFailedTokenCreation         = errors.New("failed to create jwt token")
-	ErrSavingTokenSession          = errors.New("error saving token session")
-	ErrDeletingTokenSession        = errors.New("error deleting token session")
-	ErrGettingTokenSession         = errors.New("error getting token session")
+	ErrMissingAuthValues       = errors.New("missing auth values")
+	ErrMissingRegValues        = errors.New("missing reg values")
+	ErrInvalidUsername         = errors.New("invalid username")
+	ErrInvalidPassword         = errors.New("invalid password")
+	ErrInvalidCaptcha          = errors.New("invalid captcha")
+	ErrUserAlreadyExists       = errors.New("username or email already exists")
+	ErrUserDoesNotExist        = errors.New("user does not exist")
+	ErrHashingPassword         = errors.New("error hashing password")
+	ErrUnhashingPassword       = errors.New("error unhashing password")
+	ErrWrongUsernameOrPassword = errors.New("wrong username or password")
+	ErrRegUser                 = errors.New("error registering user")
+
+	ErrFailedTokenCreation     = errors.New("failed to create jwt token")
+	ErrSavingAuthSession       = errors.New("error saving auth session")
+	ErrGettingAuthSession      = errors.New("error getting auth session")
+	ErrSavingPassResetSession  = errors.New("error saving password reset session")
+	ErrGettingPassResetSession = errors.New("error getting password reset session")
+	ErrSavingRegSession        = errors.New("error saving reg session")
+	ErrGettingRegSession       = errors.New("error getting reg session")
+	ErrDeletingSession         = errors.New("error deleting session")
+
+	ErrSendingEmail = errors.New("error sending email")
+
 	ErrInvalidAccessToken          = errors.New("invalid access token")
 	ErrExpiredAccessToken          = errors.New("access token is expired")
 	ErrAccessTokenUuidNotExists    = errors.New("failed to get access token uuid")
@@ -38,9 +43,8 @@ var (
 	ErrRefreshTokenUuidNotExists   = errors.New("failed to get refresh token uuid")
 	ErrRefreshTokenUserIdNotExists = errors.New("failed to get refresh token user id")
 
-	DB          *sql.DB
-	Middleware  models.JWTMiddleware
-	RedisClient *redis.Client
+	DB         *sql.DB
+	Middleware models.JWTMiddleware
 )
 
 type User struct {
@@ -53,16 +57,9 @@ type AccessDetails struct {
 	UserId     int64
 }
 
-func Setup(generalDB *sql.DB, middleware models.JWTMiddleware, redisClient *redis.Client, siteKey, secretKey string) {
+func Setup(generalDB *sql.DB, middleware models.JWTMiddleware) {
 	DB = generalDB
 	Middleware = middleware
-	RedisClient = redisClient
-
-	// configure captcha
-	SiteKey = siteKey
-	CaptchaClient = hcaptcha.New(secretKey)
-	RegForm = template.Must(template.ParseFiles("./forms/reg_form.html"))
-	AuthForm = template.Must(template.ParseFiles("./forms/auth_form.html"))
 }
 
 func handleErr(c *gin.Context, httpCode int, err error) {

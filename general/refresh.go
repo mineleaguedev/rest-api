@@ -57,12 +57,12 @@ func RefreshHandler(c *gin.Context) {
 	}
 
 	if deleted, err := deleteSession(refreshUuid); err != nil || deleted == 0 {
-		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingTokenSession, err)
+		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingSession, err)
 		return
 	}
 
-	if err := saveSession(userId, td); err != nil {
-		handleInternalErr(c, http.StatusInternalServerError, ErrSavingTokenSession, err)
+	if err := saveAuthSession(userId, td); err != nil {
+		handleInternalErr(c, http.StatusInternalServerError, ErrSavingAuthSession, err)
 		return
 	}
 

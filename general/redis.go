@@ -1,67 +1,74 @@
 package general
 
 import (
+	"context"
 	"encoding/json"
+	goredis "github.com/go-redis/redis/v8"
 	"github.com/gomodule/redigo/redis"
+	"github.com/nitishm/go-rejson/v4"
 	"strconv"
 	"time"
 )
 
-type RegTokenInfo struct {
+var (
+	redisClient      *goredis.Client
+	redisJsonHandler *rejson.Handler
+	ctx              context.Context
+)
+
+type regInfo struct {
 	Username       string `json:"username"`
 	Email          string `json:"email"`
 	HashedPassword string `json:"hashedPassword"`
 }
 
-func saveRegTokenSession(token, username, email, hashedPassword string) error {
-	regTokenInfo := RegTokenInfo{
+func SetupRedis(client *goredis.Client, jsonHandler *rejson.Handler) {
+	redisClient = client
+	redisJsonHandler = jsonHandler
+	ctx = context.TODO()
+}
+
+func saveRegSession(token, username, email, hashedPassword string) error {
+	regInfo := regInfo{
 		Username:       username,
 		Email:          email,
 		HashedPassword: hashedPassword,
 	}
 
-	_, err := RedisJsonHandler.JSONSet(token, ".", regTokenInfo)
-	if err != nil {
+	if _, err := redisJsonHandler.JSONSet(token, ".", regInfo); err != nil {
 		return err
 	}
 
-	_, err = RedisClient.Do(ctx, "EXPIRE", token, Middleware.RegTokenTime).Result()
-	if err != nil {
+	if _, err := redisClient.Do(ctx, "EXPIRE", token, Middleware.RegTokenTime).Result(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getRegTokenSession(token string) (*RegTokenInfo, error) {
-	jsonBytes, err := redis.Bytes(RedisJsonHandler.JSONGet(token, "."))
+func getRegSession(token string) (*regInfo, error) {
+	jsonBytes, err := redis.Bytes(redisJsonHandler.JSONGet(token, "."))
 	if err != nil {
 		return nil, err
 	}
 
-	regTokenInfo := RegTokenInfo{}
-	err = json.Unmarshal(jsonBytes, &regTokenInfo)
-	if err != nil {
+	regInfo := regInfo{}
+	if err = json.Unmarshal(jsonBytes, &regInfo); err != nil {
 		return nil, err
 	}
 
-	return &regTokenInfo, nil
+	return &regInfo, nil
 }
 
-func savePassResetTokenSession(token string, userId int64) error {
-	// converting Unix to UTC
-	expires := time.Now().Add(Middleware.PassResetTokenTime)
-	now := time.Now()
-
-	err := RedisClient.Set(ctx, token, strconv.Itoa(int(userId)), expires.Sub(now)).Err()
-	if err != nil {
+func savePassResetSession(token string, userId int64) error {
+	if err := redisClient.Set(ctx, token, strconv.Itoa(int(userId)), Middleware.PassResetTokenTime).Err(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func getPassResetTokenSession(token string) (int64, error) {
-	userid, err := RedisClient.Get(ctx, token).Result()
+func getPassResetSession(token string) (int64, error) {
+	userid, err := redisClient.Get(ctx, token).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -70,37 +77,37 @@ func getPassResetTokenSession(token string) (int64, error) {
 	return userID, nil
 }
 
-func saveSession(userId int64, td *TokenDetails) error {
+func saveAuthSession(userId int64, td *TokenDetails) error {
 	// converting Unix to UTC
 	at := time.Unix(td.AtExpires, 0)
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
 
-	errAccess := RedisClient.Set(ctx, td.AccessUuid, strconv.Itoa(int(userId)), at.Sub(now)).Err()
-	if errAccess != nil {
-		return errAccess
+	if err := redisClient.Set(ctx, td.AccessUuid, strconv.Itoa(int(userId)), at.Sub(now)).Err(); err != nil {
+		return err
 	}
-	errRefresh := RedisClient.Set(ctx, td.RefreshUuid, strconv.Itoa(int(userId)), rt.Sub(now)).Err()
-	if errRefresh != nil {
-		return errRefresh
+
+	if err := redisClient.Set(ctx, td.RefreshUuid, strconv.Itoa(int(userId)), rt.Sub(now)).Err(); err != nil {
+		return err
 	}
+
 	return nil
 }
 
-func deleteSession(uuid string) (int64, error) {
-	deleted, err := RedisClient.Del(ctx, uuid).Result()
-	if err != nil {
-		return 0, err
-	}
-	return deleted, nil
-}
-
-func getSession(accessDetails *AccessDetails) (int64, error) {
-	userid, err := RedisClient.Get(ctx, accessDetails.AccessUuid).Result()
+func getAuthSession(accessDetails *AccessDetails) (int64, error) {
+	userid, err := redisClient.Get(ctx, accessDetails.AccessUuid).Result()
 	if err != nil {
 		return 0, err
 	}
 
 	userID, _ := strconv.ParseInt(userid, 10, 64)
 	return userID, nil
+}
+
+func deleteSession(key string) (int64, error) {
+	deleted, err := redisClient.Del(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+	return deleted, nil
 }

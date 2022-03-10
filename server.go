@@ -1,15 +1,22 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/mineleaguedev/rest-api/controllers"
 	"github.com/mineleaguedev/rest-api/general"
 	"github.com/mineleaguedev/rest-api/models"
+	"github.com/nitishm/go-rejson/v4"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
@@ -45,25 +52,24 @@ func main() {
 		log.Fatalf("Error connecting to minigames database: %s", err)
 	}
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("redis.addr"),
-		Password: os.Getenv("redis.password"),
-		DB:       0,
-	})
-	_, err = redisClient.Ping().Result()
-	if err != nil {
-		log.Fatalf("Error connecting to redis: %s", err)
+	viper.AddConfigPath(".")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error loading config: %s", err.Error())
 	}
 
 	middleware := models.JWTMiddleware{
-		Realm:            "mineleague jwt",
-		AccessTokenKey:   []byte(os.Getenv("jwt.access.key")),
-		RefreshTokenKey:  []byte(os.Getenv("jwt.refresh.key")),
-		AccessTokenTime:  15 * time.Minute,
-		RefreshTokenTime: 30 * 24 * time.Hour,
-		IdentityKey:      "username",
-		TokenLookup:      "cookie:token",
-		TokenHeadName:    "Bearer",
+		Realm:              "mineleague jwt",
+		AccessTokenKey:     []byte(os.Getenv("jwt.access.key")),
+		RefreshTokenKey:    []byte(os.Getenv("jwt.refresh.key")),
+		AccessTokenTime:    15 * time.Minute,
+		RefreshTokenTime:   30 * 24 * time.Hour,
+		RegTokenTime:       30 * 1000,
+		PassResetTokenTime: 30 * time.Minute,
+		IdentityKey:        "username",
+		TokenLookup:        "cookie:token",
+		TokenHeadName:      "Bearer",
 
 		SendCookie:     true,
 		CookieMaxAge:   30 * 24 * time.Hour,
@@ -74,14 +80,46 @@ func main() {
 		CookieSameSite: http.SameSiteStrictMode,
 	}
 
+	// setup email
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(os.Getenv("aws.ses.region")),
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("aws.ses.access.key.id"),
+			os.Getenv("aws.ses.secret.access.key"),
+			"",
+		),
+	})
+	emailClient := ses.New(sess)
+	general.SetupEmail(emailClient)
+
+	// setup redis
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("redis.addr"),
+		Password: os.Getenv("redis.password"),
+		DB:       0,
+	})
+	_, err = redisClient.Ping(context.TODO()).Result()
+	if err != nil {
+		log.Fatalf("Error connecting to redis: %s", err)
+	}
+	redisJsonHandler := rejson.NewReJSONHandler()
+	redisJsonHandler.SetGoRedisClient(redisClient)
+	general.SetupRedis(redisClient, redisJsonHandler)
+
+	// setup hcaptcha
+	hcaptchaSiteKey := os.Getenv("hcaptcha.site.key")
+	hcaptchaSecretKey := os.Getenv("hcaptcha.secret.key")
+	general.SetupCaptcha(hcaptchaSiteKey, hcaptchaSecretKey)
+
 	controllers.Controller(generalDB, miniGamesDB)
-	general.Setup(generalDB, middleware, redisClient, os.Getenv("hcaptcha.site.key"), os.Getenv("hcaptcha.secret.key"))
+	general.Setup(generalDB, middleware)
 
 	auth := router.Group("/auth")
 	{
 		auth.GET("/reg", general.RenderRegForm)
-		auth.GET("/auth", general.RenderAuthForm)
 		auth.POST("/reg", general.RegHandler)
+		auth.GET("/reg/confirm/:token", general.ConfirmRegHandler)
+		auth.GET("/auth", general.RenderAuthForm)
 		auth.POST("/auth", general.AuthHandler)
 		auth.POST("/refresh", general.RefreshHandler)
 		auth.POST("/logout", general.LogoutHandler)
