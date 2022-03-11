@@ -1,0 +1,35 @@
+email:
+  reg:
+    from: "support@mineleague.ru"
+    subject: "Регистрация на MineLeague.ru"
+    htmlBody: "Добро пожаловать на проект MineLeague!
+
+      Для того чтобы подтвердить регистрацию, перейдите по ссылке:
+      
+      https://mineleague.ru/auth/reg/confirm/%token%
+      
+      С уважением, команда MineLeague!
+      
+      Связаться с нами:
+      Тех. поддержка - support.mineleague.ru
+      Группа ВК - vk.com/mineleague
+      Сайт - mineleague.ru"
+    charSet: "UTF-8"
+  passReset:
+    from: "support@mineleague.ru"
+    subject: "Восстановление пароля MineLeague.ru"
+    htmlBody: "На Ваш аккаунт %username% было запрошено восстановление пароля с IP адреса %ip_address%.
+  
+      Если это отправили не Вы, просто проигнорируйте это сообщение.
+      
+      Для того чтобы восстановить пароль, перейдите по ссылке - %pass_reset_link%
+      
+      С уважением, команда MineLeague!
+      
+      Связаться с нами:
+      Тех. поддержка - support.mineleague.ru
+      Группа ВК - vk.com/mineleague
+      Сайт - mineleague.ru
+      Слушай
+      А при регистрации же пользователь может ввести совершенно другой адрес почты"
+    charSet: "UTF-8"
