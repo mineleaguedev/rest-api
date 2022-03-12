@@ -2,34 +2,32 @@ email:
   reg:
     from: "support@mineleague.ru"
     subject: "Регистрация на MineLeague.ru"
-    htmlBody: "Добро пожаловать на проект MineLeague!
+    htmlBody: "<p>Добро пожаловать на проект MineLeague!</p>
 
-      Для того чтобы подтвердить регистрацию, перейдите по ссылке:
+      <p>Для того чтобы подтвердить регистрацию, перейдите по ссылке:</p>
       
-      https://mineleague.ru/auth/reg/confirm/%token%
+      <p>https://mineleague.ru/auth/reg/confirm/%token%</p>
       
-      С уважением, команда MineLeague!
+      <p>С уважением, команда MineLeague!</p>
       
-      Связаться с нами:
-      Тех. поддержка - support.mineleague.ru
-      Группа ВК - vk.com/mineleague
-      Сайт - mineleague.ru"
+      <p>Связаться с нами:</p>
+      <p>Тех. поддержка - support.mineleague.ru</p>
+      <p>Группа ВК - vk.com/mineleague</p>
+      <p>Сайт - mineleague.ru</p>"
     charSet: "UTF-8"
   passReset:
     from: "support@mineleague.ru"
     subject: "Восстановление пароля MineLeague.ru"
-    htmlBody: "На Ваш аккаунт %username% было запрошено восстановление пароля с IP адреса %ip_address%.
+    htmlBody: "<p>На Ваш аккаунт %username% было запрошено восстановление пароля с IP адреса %ip_address%.</p>
   
-      Если это отправили не Вы, просто проигнорируйте это сообщение.
+      <p>Если это отправили не Вы, просто проигнорируйте это сообщение.</p>
       
-      Для того чтобы восстановить пароль, перейдите по ссылке - %pass_reset_link%
+      <p>Для того чтобы восстановить пароль, перейдите по ссылке - %pass_reset_link%</p>
       
-      С уважением, команда MineLeague!
+      <p>С уважением, команда MineLeague!</p>
       
-      Связаться с нами:
-      Тех. поддержка - support.mineleague.ru
-      Группа ВК - vk.com/mineleague
-      Сайт - mineleague.ru
-      Слушай
-      А при регистрации же пользователь может ввести совершенно другой адрес почты"
+      <p>Связаться с нами:</p>
+      <p>Тех. поддержка - support.mineleague.ru</p>
+      <p>Группа ВК - vk.com/mineleague</p>
+      <p>Сайт - mineleague.ru</p>"
     charSet: "UTF-8"
