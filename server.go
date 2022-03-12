@@ -12,11 +12,14 @@ import (
 	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"github.com/kataras/hcaptcha"
 	"github.com/mineleaguedev/rest-api/controllers"
 	"github.com/mineleaguedev/rest-api/general"
 	"github.com/mineleaguedev/rest-api/models"
+	"github.com/mineleaguedev/rest-api/services"
 	"github.com/nitishm/go-rejson/v4"
 	"github.com/spf13/viper"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -24,10 +27,15 @@ import (
 )
 
 func main() {
-	router := gin.Default()
-
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading env variables: %s", err.Error())
+	}
+
+	viper.AddConfigPath(".")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error loading config: %s", err.Error())
 	}
 
 	generalDB, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
@@ -52,20 +60,14 @@ func main() {
 		log.Fatalf("Error connecting to minigames database: %s", err)
 	}
 
-	viper.AddConfigPath(".")
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error loading config: %s", err.Error())
-	}
-
+	// setup jwt
 	middleware := models.JWTMiddleware{
 		Realm:              "mineleague jwt",
 		AccessTokenKey:     []byte(os.Getenv("jwt.access.key")),
 		RefreshTokenKey:    []byte(os.Getenv("jwt.refresh.key")),
 		AccessTokenTime:    15 * time.Minute,
 		RefreshTokenTime:   30 * 24 * time.Hour,
-		RegTokenTime:       30 * 1000,
+		RegTokenTime:       30 * 60,
 		PassResetTokenTime: 30 * time.Minute,
 		IdentityKey:        "username",
 		TokenLookup:        "cookie:token",
@@ -80,18 +82,6 @@ func main() {
 		CookieSameSite: http.SameSiteStrictMode,
 	}
 
-	// setup email
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(os.Getenv("aws.ses.region")),
-		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("aws.ses.access.key.id"),
-			os.Getenv("aws.ses.secret.access.key"),
-			"",
-		),
-	})
-	emailClient := ses.New(sess)
-	general.SetupEmail(emailClient)
-
 	// setup redis
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("redis.addr"),
@@ -104,22 +94,51 @@ func main() {
 	}
 	redisJsonHandler := rejson.NewReJSONHandler()
 	redisJsonHandler.SetGoRedisClient(redisClient)
-	general.SetupRedis(redisClient, redisJsonHandler)
 
-	// setup hcaptcha
-	hcaptchaSiteKey := os.Getenv("hcaptcha.site.key")
-	hcaptchaSecretKey := os.Getenv("hcaptcha.secret.key")
-	general.SetupCaptcha(hcaptchaSiteKey, hcaptchaSecretKey)
+	// setup email
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(os.Getenv("aws.ses.region")),
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("aws.ses.access.key.id"),
+			os.Getenv("aws.ses.secret.access.key"),
+			"",
+		),
+	})
+	emailClient := ses.New(sess)
+
+	service := services.NewService(
+		middleware,
+		models.RedisConfig{
+			Client:      redisClient,
+			JsonHandler: redisJsonHandler,
+			Ctx:         context.TODO(),
+		}, models.EmailConfig{
+			RegFrom:           viper.GetString("email.reg.from"),
+			RegSubject:        viper.GetString("email.reg.subject"),
+			RegHtmlBody:       viper.GetString("email.reg.htmlBody"),
+			RegCharSet:        viper.GetString("email.reg.charSet"),
+			PassResetFrom:     viper.GetString("email.passReset.from"),
+			PassResetSubject:  viper.GetString("email.passReset.subject"),
+			PassResetHtmlBody: viper.GetString("email.passReset.htmlBody"),
+			PassResetCharSet:  viper.GetString("email.passReset.charSet"),
+			Client:            emailClient,
+		}, models.CaptchaConfig{
+			SiteKey:  os.Getenv("hcaptcha.site.key"),
+			Client:   hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
+			RegForm:  template.Must(template.ParseFiles("./forms/reg_form.html")),
+			AuthForm: template.Must(template.ParseFiles("./forms/auth_form.html")),
+		})
 
 	controllers.Controller(generalDB, miniGamesDB)
-	general.Setup(generalDB, middleware)
+	general.Setup(generalDB, service, middleware)
 
+	router := gin.Default()
 	auth := router.Group("/auth")
 	{
-		auth.GET("/reg", general.RenderRegForm)
+		auth.GET("/reg", service.RenderRegForm)
 		auth.POST("/reg", general.RegHandler)
 		auth.GET("/reg/confirm/:token", general.ConfirmRegHandler)
-		auth.GET("/auth", general.RenderAuthForm)
+		auth.GET("/auth", service.RenderAuthForm)
 		auth.POST("/auth", general.AuthHandler)
 		auth.POST("/refresh", general.RefreshHandler)
 		auth.POST("/logout", general.LogoutHandler)

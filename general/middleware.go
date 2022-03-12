@@ -2,21 +2,22 @@ package general
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mineleaguedev/rest-api/errors"
 	"net/http"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		accessDetails, err := extractTokenMetadata(c.Request)
+		accessDetails, err := Service.ExtractTokenMetadata(c.Request)
 		if err != nil {
-			handleErr(c, http.StatusUnauthorized, err)
+			Service.HandleErr(c, http.StatusUnauthorized, err)
 			c.Abort()
 			return
 		}
 
-		userId, err := getAuthSession(accessDetails)
+		userId, err := Service.GetAuthSession(accessDetails)
 		if err != nil {
-			handleInternalErr(c, http.StatusInternalServerError, ErrGettingAuthSession, err)
+			Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrGettingAuthSession, err)
 			c.Abort()
 			return
 		}

@@ -1,0 +1,40 @@
+package services
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/kataras/hcaptcha"
+	"github.com/mineleaguedev/rest-api/models"
+	"log"
+)
+
+type CaptchaService struct {
+	config models.CaptchaConfig
+}
+
+func NewCaptchaService(captchaConfig models.CaptchaConfig) *CaptchaService {
+	return &CaptchaService{
+		config: captchaConfig,
+	}
+}
+
+func (s *CaptchaService) RenderRegForm(c *gin.Context) {
+	if err := s.config.RegForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering reg form: %s\n", err.Error())
+		return
+	}
+}
+
+func (s *CaptchaService) RenderAuthForm(c *gin.Context) {
+	if err := s.config.AuthForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering auth form: %s\n", err.Error())
+		return
+	}
+}
+
+func (s *CaptchaService) VerifyCaptcha(token string) (response hcaptcha.Response) {
+	return s.config.Client.VerifyToken(token)
+}

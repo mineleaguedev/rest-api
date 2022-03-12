@@ -7,6 +7,7 @@ import (
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mineleaguedev/rest-api/errors"
 	"github.com/mineleaguedev/rest-api/models"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ import (
 func RegHandler(c *gin.Context) {
 	httpCode, err := registerUser(c)
 	if err != nil {
-		handleErr(c, httpCode, err)
+		Service.HandleErr(c, httpCode, err)
 		return
 	}
 
@@ -29,20 +30,20 @@ func RegHandler(c *gin.Context) {
 func ConfirmRegHandler(c *gin.Context) {
 	token := c.Param("token")
 
-	regInfo, err := getRegSession(token)
+	regInfo, err := Service.GetRegSession(token)
 	if err != nil {
-		handleInternalErr(c, http.StatusInternalServerError, ErrGettingRegSession, err)
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrGettingRegSession, err)
 		return
 	}
 
-	if deleted, err := deleteSession(token); err != nil || deleted == 0 {
-		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingSession, err)
+	if deleted, err := Service.DeleteSession(token); err != nil || deleted == 0 {
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSession, err)
 		return
 	}
 
 	if _, err := DB.Exec("INSERT INTO `users` (`username`, `email`, `password_hash`) VALUES (?, ?, ?)",
 		regInfo.Username, regInfo.Email, regInfo.HashedPassword); err != nil {
-		handleInternalErr(c, http.StatusInternalServerError, ErrRegUser, err)
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrRegUser, err)
 		return
 	}
 
@@ -87,43 +88,43 @@ func registerUser(c *gin.Context) (int, error) {
 	var input models.RegisterRequest
 
 	if err := c.ShouldBind(&input); err != nil {
-		return http.StatusBadRequest, ErrMissingRegValues
+		return http.StatusBadRequest, errors.ErrMissingRegValues
 	}
 
 	if !validUsername(input.Username) {
-		return http.StatusBadRequest, ErrInvalidUsername
+		return http.StatusBadRequest, errors.ErrInvalidUsername
 	}
 
 	if sevenOrMore, number := validPassword(input.Password); !sevenOrMore || !number {
-		return http.StatusBadRequest, ErrInvalidPassword
+		return http.StatusBadRequest, errors.ErrInvalidPassword
 	}
 
-	if response := captchaClient.VerifyToken(input.Captcha); !response.Success {
-		return http.StatusBadRequest, ErrInvalidCaptcha
+	if response := Service.VerifyCaptcha(input.Captcha); !response.Success {
+		return http.StatusBadRequest, errors.ErrInvalidCaptcha
 	}
 
 	var exists bool
 	err := DB.QueryRow("SELECT 1 FROM `users` WHERE `username` = ? OR `email` = ?", input.Username, input.Email).Scan(&exists)
 	if (err != nil && err != sql.ErrNoRows) || exists {
-		return http.StatusBadRequest, ErrUserAlreadyExists
+		return http.StatusBadRequest, errors.ErrUserAlreadyExists
 	}
 
 	hashedPassword, err := argon2id.CreateHash(input.Password, argon2id.DefaultParams)
 	if err != nil {
-		log.Printf(ErrHashingPassword.Error()+": %s\n", err.Error())
-		return http.StatusInternalServerError, ErrHashingPassword
+		log.Printf(errors.ErrHashingPassword.Error()+": %s\n", err.Error())
+		return http.StatusInternalServerError, errors.ErrHashingPassword
 	}
 
 	regToken := generateToken(40)
 
-	if err := saveRegSession(regToken, input.Username, input.Email, hashedPassword); err != nil {
-		log.Printf(ErrSavingRegSession.Error()+": %s\n", err.Error())
-		return http.StatusInternalServerError, ErrSavingRegSession
+	if err := Service.SaveRegSession(regToken, input.Username, input.Email, hashedPassword, Middleware.RegTokenTime); err != nil {
+		log.Printf(errors.ErrSavingRegSession.Error()+": %s\n", err.Error())
+		return http.StatusInternalServerError, errors.ErrSavingRegSession
 	}
 
-	if err := sendRegEmail(input.Email, regToken); err != nil {
-		log.Printf(ErrSendingEmail.Error()+": %s\n", err.Error())
-		return http.StatusInternalServerError, ErrSendingEmail
+	if err := Service.SendRegEmail(input.Email, regToken); err != nil {
+		log.Printf(errors.ErrSendingEmail.Error()+": %s\n", err.Error())
+		return http.StatusInternalServerError, errors.ErrSendingEmail
 	}
 
 	return http.StatusOK, nil

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/mineleaguedev/rest-api/errors"
 	"net/http"
 	"strconv"
 )
@@ -11,7 +12,7 @@ import (
 func RefreshHandler(c *gin.Context) {
 	mapToken := map[string]string{}
 	if err := c.ShouldBindJSON(&mapToken); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, ErrMissingRefreshToken)
+		c.JSON(http.StatusUnprocessableEntity, errors.ErrMissingRefreshToken)
 		return
 	}
 	refreshToken := mapToken["refresh_token"]
@@ -23,46 +24,46 @@ func RefreshHandler(c *gin.Context) {
 		return Middleware.RefreshTokenKey, nil
 	})
 	if err != nil {
-		handleErr(c, http.StatusUnauthorized, ErrInvalidRefreshToken)
+		Service.HandleErr(c, http.StatusUnauthorized, errors.ErrInvalidRefreshToken)
 		return
 	}
 
 	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		handleErr(c, http.StatusUnauthorized, ErrExpiredRefreshToken)
+		Service.HandleErr(c, http.StatusUnauthorized, errors.ErrExpiredRefreshToken)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		handleErr(c, http.StatusUnauthorized, ErrExpiredRefreshToken)
+		Service.HandleErr(c, http.StatusUnauthorized, errors.ErrExpiredRefreshToken)
 		return
 	}
 
 	refreshUuid, ok := claims["refresh_uuid"].(string)
 	if !ok {
-		handleErr(c, http.StatusUnprocessableEntity, ErrRefreshTokenUuidNotExists)
+		Service.HandleErr(c, http.StatusUnprocessableEntity, errors.ErrRefreshTokenUuidNotExists)
 		return
 	}
 
 	userId, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["id"]), 10, 64)
 	if err != nil {
-		handleErr(c, http.StatusUnprocessableEntity, ErrRefreshTokenUserIdNotExists)
+		Service.HandleErr(c, http.StatusUnprocessableEntity, errors.ErrRefreshTokenUserIdNotExists)
 		return
 	}
 
-	td, err := createToken(userId)
+	td, err := Service.CreateToken(userId)
 	if err != nil {
-		handleInternalErr(c, http.StatusInternalServerError, ErrFailedTokenCreation, err)
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrFailedTokenCreation, err)
 		return
 	}
 
-	if deleted, err := deleteSession(refreshUuid); err != nil || deleted == 0 {
-		handleInternalErr(c, http.StatusInternalServerError, ErrDeletingSession, err)
+	if deleted, err := Service.DeleteSession(refreshUuid); err != nil || deleted == 0 {
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSession, err)
 		return
 	}
 
-	if err := saveAuthSession(userId, td); err != nil {
-		handleInternalErr(c, http.StatusInternalServerError, ErrSavingAuthSession, err)
+	if err := Service.SaveAuthSession(userId, td); err != nil {
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSavingAuthSession, err)
 		return
 	}
 
