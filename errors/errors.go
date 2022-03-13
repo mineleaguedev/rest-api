@@ -3,8 +3,9 @@ package errors
 import "errors"
 
 var (
-	ErrMissingAuthValues       = errors.New("missing auth errors")
-	ErrMissingRegValues        = errors.New("missing reg errors")
+	ErrMissingAuthValues       = errors.New("missing auth values")
+	ErrMissingRegValues        = errors.New("missing reg values")
+	ErrMissingPassResetValues  = errors.New("missing password reset values")
 	ErrInvalidUsername         = errors.New("invalid username")
 	ErrInvalidPassword         = errors.New("invalid password")
 	ErrInvalidCaptcha          = errors.New("invalid captcha")

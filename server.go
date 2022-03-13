@@ -121,12 +121,17 @@ func main() {
 			PassResetSubject:  viper.GetString("email.passReset.subject"),
 			PassResetHtmlBody: viper.GetString("email.passReset.htmlBody"),
 			PassResetCharSet:  viper.GetString("email.passReset.charSet"),
+			NewPassFrom:       viper.GetString("email.newPass.from"),
+			NewPassSubject:    viper.GetString("email.newPass.subject"),
+			NewPassHtmlBody:   viper.GetString("email.newPass.htmlBody"),
+			NewPassCharSet:    viper.GetString("email.newPass.charSet"),
 			Client:            emailClient,
 		}, models.CaptchaConfig{
-			SiteKey:  os.Getenv("hcaptcha.site.key"),
-			Client:   hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
-			RegForm:  template.Must(template.ParseFiles("./forms/reg_form.html")),
-			AuthForm: template.Must(template.ParseFiles("./forms/auth_form.html")),
+			SiteKey:       os.Getenv("hcaptcha.site.key"),
+			Client:        hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
+			RegForm:       template.Must(template.ParseFiles("./forms/reg_form.html")),
+			AuthForm:      template.Must(template.ParseFiles("./forms/auth_form.html")),
+			PassResetForm: template.Must(template.ParseFiles("./forms/pass_reset_form.html")),
 		})
 
 	controllers.Controller(generalDB, miniGamesDB)
@@ -140,6 +145,9 @@ func main() {
 		auth.GET("/reg/confirm/:token", general.ConfirmRegHandler)
 		auth.GET("/auth", service.RenderAuthForm)
 		auth.POST("/auth", general.AuthHandler)
+		auth.GET("/passReset", service.RenderPassResetForm)
+		auth.POST("/passReset", general.PassResetHandler)
+		auth.GET("/passReset/confirm/:token", general.ConfirmPassResetHandler)
 		auth.POST("/refresh", general.RefreshHandler)
 		auth.POST("/logout", general.LogoutHandler)
 	}

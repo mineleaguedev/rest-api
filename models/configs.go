@@ -24,12 +24,17 @@ type EmailConfig struct {
 	PassResetSubject  string
 	PassResetHtmlBody string
 	PassResetCharSet  string
+	NewPassFrom       string
+	NewPassSubject    string
+	NewPassHtmlBody   string
+	NewPassCharSet    string
 	Client            *ses.SES
 }
 
 type CaptchaConfig struct {
-	SiteKey  string
-	Client   *hcaptcha.Client
-	RegForm  *template.Template
-	AuthForm *template.Template
+	SiteKey       string
+	Client        *hcaptcha.Client
+	RegForm       *template.Template
+	AuthForm      *template.Template
+	PassResetForm *template.Template
 }

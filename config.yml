@@ -10,10 +10,10 @@ email:
       
       <p>С уважением, команда MineLeague!</p>
       
-      <p>Связаться с нами:</p>
-      <p>Тех. поддержка - support.mineleague.ru</p>
-      <p>Группа ВК - vk.com/mineleague</p>
-      <p>Сайт - mineleague.ru</p>"
+      <p>Связаться с нами:
+      <br>Тех. поддержка - support.mineleague.ru</br>
+      <br>Группа ВК - vk.com/mineleague</br>
+      <br>Сайт - mineleague.ru</br></p>"
     charSet: "UTF-8"
   passReset:
     from: "support@mineleague.ru"
@@ -22,12 +22,29 @@ email:
   
       <p>Если это отправили не Вы, просто проигнорируйте это сообщение.</p>
       
-      <p>Для того чтобы восстановить пароль, перейдите по ссылке - %pass_reset_link%</p>
+      <p>Для того чтобы восстановить пароль, перейдите по ссылке - https://mineleague.ru/auth/passReset/confirm/%pass_reset_token%</p>
       
       <p>С уважением, команда MineLeague!</p>
       
-      <p>Связаться с нами:</p>
-      <p>Тех. поддержка - support.mineleague.ru</p>
-      <p>Группа ВК - vk.com/mineleague</p>
-      <p>Сайт - mineleague.ru</p>"
+      <p>Связаться с нами:
+      <br>Тех. поддержка - support.mineleague.ru</br>
+      <br>Группа ВК - vk.com/mineleague</br>
+      <br>Сайт - mineleague.ru</br></p>"
+    charSet: "UTF-8"
+  newPass:
+    from: "support@mineleague.ru"
+    subject: "Новый пароль на MineLeague.ru"
+    htmlBody: "<p>Ваши новые данные для входа:</p>
+
+      <p>Логин: %username%</p>
+      <p>Новый пароль: %password%</p>
+
+      <p>Рекомендуется сразу же сменить пароль в <a href='https://cabinet.mineleague.ru/'>Личном кабинете</a></p>
+
+      <p>С уважением, команда MineLeague!</p>
+
+      <p>Связаться с нами:
+      <br>Тех. поддержка - support.mineleague.ru</br>
+      <br>Группа ВК - vk.com/mineleague</br>
+      <br>Сайт - mineleague.ru</br></p>"
     charSet: "UTF-8"
