@@ -1,0 +1,17 @@
+<html>
+
+<head>
+    <script src="https://hcaptcha.com/1/api.js" async defer></script>
+</head>
+
+<body>
+<form action="/changePass" method="POST">
+    <input type="password" name="old-password" placeholder="Old Password" />
+    <input type="password" name="new-password" placeholder="New Password" />
+    <div class="h-captcha" data-sitekey="{{ .SiteKey }}"></div>
+    <br />
+    <input type="submit" value="Submit" />
+</form>
+</body>
+
+</html>

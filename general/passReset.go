@@ -115,7 +115,7 @@ func ConfirmPassResetHandler(c *gin.Context) {
 	}
 
 	if _, err := DB.Exec("UPDATE `users` SET `password_hash` = ? WHERE `id` = ?", hashedPassword, userId); err != nil {
-		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrRegUser, err)
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrUpdatingUserPassword, err)
 		return
 	}
 

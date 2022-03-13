@@ -1,7 +1,6 @@
 package general
 
 import (
-	"database/sql"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -50,7 +49,7 @@ func authenticate(c *gin.Context) (*int64, int, error) {
 	var id int64
 	var hashedPassword string
 	err := DB.QueryRow("SELECT `id`, `password_hash` FROM `users` WHERE `username` = ?", input.Username).Scan(&id, &hashedPassword)
-	if err != nil && err == sql.ErrNoRows {
+	if err != nil {
 		return nil, http.StatusBadRequest, errors.ErrUserDoesNotExist
 	}
 

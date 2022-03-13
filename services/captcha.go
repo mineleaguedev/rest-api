@@ -44,6 +44,15 @@ func (s *CaptchaService) RenderPassResetForm(c *gin.Context) {
 	}
 }
 
+func (s *CaptchaService) RenderChangePassForm(c *gin.Context) {
+	if err := s.config.ChangePassForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering change password form: %s\n", err.Error())
+		return
+	}
+}
+
 func (s *CaptchaService) VerifyCaptcha(token string) (response hcaptcha.Response) {
 	return s.config.Client.VerifyToken(token)
 }

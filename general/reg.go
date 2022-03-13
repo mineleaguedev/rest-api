@@ -43,7 +43,7 @@ func ConfirmRegHandler(c *gin.Context) {
 
 	if _, err := DB.Exec("INSERT INTO `users` (`username`, `email`, `password_hash`) VALUES (?, ?, ?)",
 		regInfo.Username, regInfo.Email, regInfo.HashedPassword); err != nil {
-		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrRegUser, err)
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrRegisteringUser, err)
 		return
 	}
 

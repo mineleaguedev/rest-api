@@ -35,12 +35,14 @@ type Email interface {
 	SendRegEmail(to, token string) error
 	SendPassResetEmail(to, token, username, ipAddress string) error
 	SendNewPassEmail(to, username, password string) error
+	SendChangePassEmail(to, ipAddress string) error
 }
 
 type Captcha interface {
 	RenderRegForm(c *gin.Context)
 	RenderAuthForm(c *gin.Context)
 	RenderPassResetForm(c *gin.Context)
+	RenderChangePassForm(c *gin.Context)
 	VerifyCaptcha(token string) (response hcaptcha.Response)
 }
 

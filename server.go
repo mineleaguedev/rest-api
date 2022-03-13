@@ -113,25 +113,30 @@ func main() {
 			JsonHandler: redisJsonHandler,
 			Ctx:         context.TODO(),
 		}, models.EmailConfig{
-			RegFrom:           viper.GetString("email.reg.from"),
-			RegSubject:        viper.GetString("email.reg.subject"),
-			RegHtmlBody:       viper.GetString("email.reg.htmlBody"),
-			RegCharSet:        viper.GetString("email.reg.charSet"),
-			PassResetFrom:     viper.GetString("email.passReset.from"),
-			PassResetSubject:  viper.GetString("email.passReset.subject"),
-			PassResetHtmlBody: viper.GetString("email.passReset.htmlBody"),
-			PassResetCharSet:  viper.GetString("email.passReset.charSet"),
-			NewPassFrom:       viper.GetString("email.newPass.from"),
-			NewPassSubject:    viper.GetString("email.newPass.subject"),
-			NewPassHtmlBody:   viper.GetString("email.newPass.htmlBody"),
-			NewPassCharSet:    viper.GetString("email.newPass.charSet"),
-			Client:            emailClient,
+			RegFrom:            viper.GetString("email.reg.from"),
+			RegSubject:         viper.GetString("email.reg.subject"),
+			RegHtmlBody:        viper.GetString("email.reg.htmlBody"),
+			RegCharSet:         viper.GetString("email.reg.charSet"),
+			PassResetFrom:      viper.GetString("email.passReset.from"),
+			PassResetSubject:   viper.GetString("email.passReset.subject"),
+			PassResetHtmlBody:  viper.GetString("email.passReset.htmlBody"),
+			PassResetCharSet:   viper.GetString("email.passReset.charSet"),
+			NewPassFrom:        viper.GetString("email.newPass.from"),
+			NewPassSubject:     viper.GetString("email.newPass.subject"),
+			NewPassHtmlBody:    viper.GetString("email.newPass.htmlBody"),
+			NewPassCharSet:     viper.GetString("email.newPass.charSet"),
+			ChangePassFrom:     viper.GetString("email.changePass.from"),
+			ChangePassSubject:  viper.GetString("email.changePass.subject"),
+			ChangePassHtmlBody: viper.GetString("email.changePass.htmlBody"),
+			ChangePassCharSet:  viper.GetString("email.changePass.charSet"),
+			Client:             emailClient,
 		}, models.CaptchaConfig{
-			SiteKey:       os.Getenv("hcaptcha.site.key"),
-			Client:        hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
-			RegForm:       template.Must(template.ParseFiles("./forms/reg_form.html")),
-			AuthForm:      template.Must(template.ParseFiles("./forms/auth_form.html")),
-			PassResetForm: template.Must(template.ParseFiles("./forms/pass_reset_form.html")),
+			SiteKey:        os.Getenv("hcaptcha.site.key"),
+			Client:         hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
+			RegForm:        template.Must(template.ParseFiles("./forms/reg_form.html")),
+			AuthForm:       template.Must(template.ParseFiles("./forms/auth_form.html")),
+			PassResetForm:  template.Must(template.ParseFiles("./forms/pass_reset_form.html")),
+			ChangePassForm: template.Must(template.ParseFiles("./forms/change_pass_form.html")),
 		})
 
 	controllers.Controller(generalDB, miniGamesDB)
@@ -150,11 +155,12 @@ func main() {
 		auth.GET("/passReset/confirm/:token", general.ConfirmPassResetHandler)
 		auth.POST("/refresh", general.RefreshHandler)
 		auth.POST("/logout", general.LogoutHandler)
+		auth.GET("/changePass", service.RenderChangePassForm)
 	}
 
 	router.Use(general.AuthMiddleware())
 	{
-
+		router.POST("/changePass", general.ChangePassHandler)
 	}
 
 	api := router.Group("/api")

@@ -130,3 +130,40 @@ func (s *EmailService) SendNewPassEmail(to, username, password string) error {
 
 	return nil
 }
+
+func (s *EmailService) SendChangePassEmail(to, ipAddress string) error {
+	htmlBody := strings.Replace(s.config.ChangePassHtmlBody, "%ip_address%", ipAddress, 1)
+
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			CcAddresses: []*string{},
+			ToAddresses: []*string{
+				aws.String(to),
+			},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(s.config.ChangePassCharSet),
+					Data:    aws.String(htmlBody),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(s.config.ChangePassCharSet),
+				Data:    aws.String(s.config.ChangePassSubject),
+			},
+		},
+		Source: aws.String(s.config.ChangePassFrom),
+	}
+
+	_, err := s.config.Client.SendEmail(input)
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			return awsErr
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}

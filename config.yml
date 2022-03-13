@@ -51,3 +51,18 @@ email:
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
     charSet: "UTF-8"
+  changePass:
+    from: "support@mineleague.ru"
+    subject: "Смена пароля на MineLeague.ru"
+    htmlBody: "<p>Ваш пароль был успешно сменен IP адресом %ip_address%.</p>
+
+      <p>Если это сделали не Вы, советуем восстановить пароль и закрыть все авторизованные сессии в <a href='https://cabinet.mineleague.ru/'>Личном кабинете</a>.</p>
+
+      <p><b>С уважением, команда MineLeague!</b></p>
+
+      <p>===============================================================</p>
+      <p><b>Связаться с нами:</b>
+      <br>Тех. поддержка - support.mineleague.ru</br>
+      <br>Группа ВК - vk.com/mineleague</br>
+      <br>Сайт - mineleague.ru</br></p>"
+    charSet: "UTF-8"

@@ -18,3 +18,9 @@ type PassResetRequest struct {
 	Email    string `form:"email" binding:"required,email"`
 	Captcha  string `form:"h-captcha-response" binding:"required"`
 }
+
+type ChangePassRequest struct {
+	OldPassword string `form:"old-password" binding:"required"`
+	NewPassword string `form:"new-password" binding:"required"`
+	Captcha     string `form:"h-captcha-response" binding:"required"`
+}

@@ -16,25 +16,30 @@ type RedisConfig struct {
 }
 
 type EmailConfig struct {
-	RegFrom           string
-	RegSubject        string
-	RegHtmlBody       string
-	RegCharSet        string
-	PassResetFrom     string
-	PassResetSubject  string
-	PassResetHtmlBody string
-	PassResetCharSet  string
-	NewPassFrom       string
-	NewPassSubject    string
-	NewPassHtmlBody   string
-	NewPassCharSet    string
-	Client            *ses.SES
+	RegFrom            string
+	RegSubject         string
+	RegHtmlBody        string
+	RegCharSet         string
+	PassResetFrom      string
+	PassResetSubject   string
+	PassResetHtmlBody  string
+	PassResetCharSet   string
+	NewPassFrom        string
+	NewPassSubject     string
+	NewPassHtmlBody    string
+	NewPassCharSet     string
+	ChangePassFrom     string
+	ChangePassSubject  string
+	ChangePassHtmlBody string
+	ChangePassCharSet  string
+	Client             *ses.SES
 }
 
 type CaptchaConfig struct {
-	SiteKey       string
-	Client        *hcaptcha.Client
-	RegForm       *template.Template
-	AuthForm      *template.Template
-	PassResetForm *template.Template
+	SiteKey        string
+	Client         *hcaptcha.Client
+	RegForm        *template.Template
+	AuthForm       *template.Template
+	PassResetForm  *template.Template
+	ChangePassForm *template.Template
 }
