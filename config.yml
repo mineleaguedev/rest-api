@@ -8,9 +8,10 @@ email:
       
       <p>https://mineleague.ru/auth/reg/confirm/%token%</p>
       
-      <p>С уважением, команда MineLeague!</p>
+      <p><b>С уважением, команда MineLeague!</b></p>
       
-      <p>Связаться с нами:
+      <p>===============================================================</p>
+      <p><b>Связаться с нами:</b>
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
@@ -19,14 +20,15 @@ email:
     from: "support@mineleague.ru"
     subject: "Восстановление пароля MineLeague.ru"
     htmlBody: "<p>На Ваш аккаунт %username% было запрошено восстановление пароля с IP адреса %ip_address%.</p>
-  
-      <p>Если это отправили не Вы, просто проигнорируйте это сообщение.</p>
       
       <p>Для того чтобы восстановить пароль, перейдите по ссылке - https://mineleague.ru/auth/passReset/confirm/%pass_reset_token%</p>
       
-      <p>С уважением, команда MineLeague!</p>
+      <p>Если это отправили не Вы, просто проигнорируйте это сообщение.</p>
       
-      <p>Связаться с нами:
+      <p><b>С уважением, команда MineLeague!</b></p>
+      
+      <p>===============================================================</p>
+      <p><b>Связаться с нами:</b>
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
@@ -41,9 +43,10 @@ email:
 
       <p>Рекомендуется сразу же сменить пароль в <a href='https://cabinet.mineleague.ru/'>Личном кабинете</a></p>
 
-      <p>С уважением, команда MineLeague!</p>
+      <p><b>С уважением, команда MineLeague!</b></p>
 
-      <p>Связаться с нами:
+      <p>===============================================================</p>
+      <p><b>Связаться с нами:</b>
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
