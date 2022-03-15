@@ -3,12 +3,13 @@ package errors
 import "errors"
 
 var (
-	ErrMissingAuthValues        = errors.New("missing auth values")
-	ErrMissingRegValues         = errors.New("missing reg values")
-	ErrMissingPassResetValues   = errors.New("missing password reset values")
-	ErrMissingChangePassValues  = errors.New("missing change password values")
-	ErrMissingChangeSkinValues  = errors.New("missing change skin values")
-	ErrMissingChangeCloakValues = errors.New("missing change cloak values")
+	ErrMissingAuthValues          = errors.New("missing auth values")
+	ErrMissingRegValues           = errors.New("missing reg values")
+	ErrMissingPassResetValues     = errors.New("missing password reset values")
+	ErrMissingChangePassValues    = errors.New("missing change password values")
+	ErrMissingChangeSkinValues    = errors.New("missing change skin values")
+	ErrMissingChangeCloakValues   = errors.New("missing change cloak values")
+	ErrMissingTransferMoneyValues = errors.New("missing transfer money values")
 
 	ErrInvalidUsername = errors.New("invalid username")
 	ErrInvalidPassword = errors.New("invalid password")
@@ -46,6 +47,10 @@ var (
 	ErrExpiredRefreshToken         = errors.New("refresh token is expired")
 	ErrRefreshTokenUuidNotExists   = errors.New("failed to get refresh token uuid")
 	ErrRefreshTokenUserIdNotExists = errors.New("failed to get refresh token user id")
+
+	ErrNotEnoughMoney     = errors.New("error not enough money")
+	ErrTransferringMoney  = errors.New("error transferring money")
+	ErrSavingTransferInfo = errors.New("error saving transfer info")
 
 	ErrSendingEmail = errors.New("error sending email")
 

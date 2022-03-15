@@ -28,3 +28,9 @@ type ChangePassRequest struct {
 type ChangeSkinRequest struct {
 	Captcha string `form:"h-captcha-response" binding:"required"`
 }
+
+type TransferMoneyRequest struct {
+	Username string `form:"username" binding:"required"`
+	Amount   int64  `form:"amount" binding:"required"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
+}

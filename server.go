@@ -218,6 +218,7 @@ func main() {
 		router.POST("/deleteSkin", general.DeleteSkinHandler)
 		router.POST("/changeCloak", general.ChangeCloakHandler)
 		router.POST("/deleteCloak", general.DeleteCloakHandler)
+		router.POST("/transferMoney", general.TransferMoneyHandler)
 	}
 
 	api := router.Group("/api")
