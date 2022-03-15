@@ -124,10 +124,25 @@ func main() {
 		),
 	})
 	if err != nil {
-		log.Fatalf("Error connecting to skin s3: %s", err)
+		log.Fatalf("Error connecting to skins s3: %s", err)
 	}
-	uploader := s3manager.NewUploader(sess)
-	deleter := s3.New(sess)
+	skinUploader := s3manager.NewUploader(sess)
+	skinDeleter := s3.New(sess)
+
+	// setup cloak
+	sess, err = session.NewSession(&aws.Config{
+		Region: awsRegion,
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("aws.s3.cloak.access.key.id"),
+			os.Getenv("aws.s3.cloak.secret.access.key"),
+			"",
+		),
+	})
+	if err != nil {
+		log.Fatalf("Error connecting to cloaks s3: %s", err)
+	}
+	cloakUploader := s3manager.NewUploader(sess)
+	cloakDeleter := s3.New(sess)
 
 	service := services.NewService(
 		middleware,
@@ -154,17 +169,23 @@ func main() {
 			ChangePassCharSet:  viper.GetString("email.changePass.charSet"),
 			Client:             emailClient,
 		}, models.CaptchaConfig{
-			SiteKey:        os.Getenv("hcaptcha.site.key"),
-			Client:         hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
-			RegForm:        template.Must(template.ParseFiles("./forms/reg_form.html")),
-			AuthForm:       template.Must(template.ParseFiles("./forms/auth_form.html")),
-			PassResetForm:  template.Must(template.ParseFiles("./forms/pass_reset_form.html")),
-			ChangePassForm: template.Must(template.ParseFiles("./forms/change_pass_form.html")),
-			ChangeSkinForm: template.Must(template.ParseFiles("./forms/change_skin_form.html")),
+			SiteKey:         os.Getenv("hcaptcha.site.key"),
+			Client:          hcaptcha.New(os.Getenv("hcaptcha.secret.key")),
+			RegForm:         template.Must(template.ParseFiles("./forms/reg_form.html")),
+			AuthForm:        template.Must(template.ParseFiles("./forms/auth_form.html")),
+			PassResetForm:   template.Must(template.ParseFiles("./forms/pass_reset_form.html")),
+			ChangePassForm:  template.Must(template.ParseFiles("./forms/change_pass_form.html")),
+			ChangeSkinForm:  template.Must(template.ParseFiles("./forms/change_skin_form.html")),
+			DeleteSkinForm:  template.Must(template.ParseFiles("./forms/delete_skin_form.html")),
+			ChangeCloakForm: template.Must(template.ParseFiles("./forms/change_cloak_form.html")),
+			DeleteCloakForm: template.Must(template.ParseFiles("./forms/delete_cloak_form.html")),
 		}, models.SkinConfig{
-			Bucket:   aws.String(os.Getenv("aws.s3.skin.bucket.name")),
-			Uploader: uploader,
-			Deleter:  deleter,
+			SkinBucket:    aws.String(os.Getenv("aws.s3.skin.bucket.name")),
+			SkinUploader:  skinUploader,
+			SkinDeleter:   skinDeleter,
+			CloakBucket:   aws.String(os.Getenv("aws.s3.cloak.bucket.name")),
+			CloakUploader: cloakUploader,
+			CloakDeleter:  cloakDeleter,
 		})
 
 	controllers.Controller(generalDB, miniGamesDB)
@@ -186,6 +207,8 @@ func main() {
 		auth.GET("/changePass", service.RenderChangePassForm)
 		auth.GET("/changeSkin", service.RenderChangeSkinForm)
 		auth.GET("/deleteSkin", service.RenderDeleteSkinForm)
+		auth.GET("/changeCloak", service.RenderChangeCloakForm)
+		auth.GET("/deleteCloak", service.RenderDeleteCloakForm)
 	}
 
 	router.Use(general.AuthMiddleware())
@@ -193,6 +216,8 @@ func main() {
 		router.POST("/changePass", general.ChangePassHandler)
 		router.POST("/changeSkin", general.ChangeSkinHandler)
 		router.POST("/deleteSkin", general.DeleteSkinHandler)
+		router.POST("/changeCloak", general.ChangeCloakHandler)
+		router.POST("/deleteCloak", general.DeleteCloakHandler)
 	}
 
 	api := router.Group("/api")
