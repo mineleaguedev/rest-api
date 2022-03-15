@@ -3,16 +3,18 @@ package errors
 import "errors"
 
 var (
-	ErrMissingAuthValues       = errors.New("missing auth values")
-	ErrMissingRegValues        = errors.New("missing reg values")
-	ErrMissingPassResetValues  = errors.New("missing password reset values")
-	ErrMissingChangePassValues = errors.New("missing change password values")
-	ErrMissingChangeSkinValues = errors.New("missing change skin values")
+	ErrMissingAuthValues        = errors.New("missing auth values")
+	ErrMissingRegValues         = errors.New("missing reg values")
+	ErrMissingPassResetValues   = errors.New("missing password reset values")
+	ErrMissingChangePassValues  = errors.New("missing change password values")
+	ErrMissingChangeSkinValues  = errors.New("missing change skin values")
+	ErrMissingChangeCloakValues = errors.New("missing change cloak values")
 
 	ErrInvalidUsername = errors.New("invalid username")
 	ErrInvalidPassword = errors.New("invalid password")
 	ErrInvalidCaptcha  = errors.New("invalid captcha")
 	ErrInvalidSkin     = errors.New("invalid skin")
+	ErrInvalidCloak    = errors.New("invalid cloak")
 
 	ErrUserAlreadyExists = errors.New("username or email already exists")
 	ErrUserDoesNotExist  = errors.New("user does not exist")
@@ -47,6 +49,8 @@ var (
 
 	ErrSendingEmail = errors.New("error sending email")
 
-	ErrSettingSkin  = errors.New("error setting skin")
-	ErrDeletingSkin = errors.New("error deleting skin")
+	ErrSettingSkin   = errors.New("error setting skin")
+	ErrDeletingSkin  = errors.New("error deleting skin")
+	ErrSettingCloak  = errors.New("error setting cloak")
+	ErrDeletingCloak = errors.New("error deleting cloak")
 )

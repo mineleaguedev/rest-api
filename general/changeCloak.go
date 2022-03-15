@@ -12,77 +12,70 @@ import (
 )
 
 const (
-	MaxSkinUploadSize = 4 << 10 // 4 kb
+	MaxCloakUploadSize = 2 << 10 // 2 kb
 )
 
-var (
-	ImageTypes = map[string]interface{}{
-		"image/jpeg": nil,
-		"image/png":  nil,
-	}
-)
-
-func ChangeSkinHandler(c *gin.Context) {
+func ChangeCloakHandler(c *gin.Context) {
 	var input models.ChangeSkinRequest
 
 	if err := c.ShouldBind(&input); err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangeSkinValues)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangeCloakValues)
 		return
 	}
 
 	// limit upload file size
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxSkinUploadSize)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxCloakUploadSize)
 
-	// get skin
+	// get cloak
 	file, fileHeader, err := c.Request.FormFile("file")
 	if err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangeSkinValues)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangeCloakValues)
 		return
 	}
 
 	defer func(file multipart.File) {
 		if err := file.Close(); err != nil {
-			Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+			Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 			return
 		}
 	}(file)
 
-	// check skin size for 64x64 and 64x32
+	// check cloak size for 22х17 and 64x32
 	img, _, err := image.Decode(file)
 	if err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 		return
 	}
 
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	if width != 64 || (height != 64 && height != 32) {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+	if (width != 22 && height != 17) && (width != 64 && height != 32) {
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 		return
 	}
 
 	// seek file
 	if _, err := file.Seek(0, 0); err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 		return
 	}
 
 	// check file type
 	buffer := make([]byte, fileHeader.Size)
 	if _, err = file.Read(buffer); err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 		return
 	}
 
 	fileType := http.DetectContentType(buffer)
 	if _, ex := ImageTypes[fileType]; !ex {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 		return
 	}
 
 	// seek file
 	if _, err := file.Seek(0, 0); err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidSkin)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidCloak)
 		return
 	}
 
@@ -100,8 +93,8 @@ func ChangeSkinHandler(c *gin.Context) {
 		return
 	}
 
-	if err := Service.SetSkin(username, file); err != nil {
-		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSettingSkin, err)
+	if err := Service.SetCloak(username, file); err != nil {
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSettingCloak, err)
 		return
 	}
 
@@ -110,11 +103,11 @@ func ChangeSkinHandler(c *gin.Context) {
 	})
 }
 
-func DeleteSkinHandler(c *gin.Context) {
+func DeleteCloakHandler(c *gin.Context) {
 	var input models.ChangeSkinRequest
 
 	if err := c.ShouldBind(&input); err != nil {
-		Service.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangeSkinValues)
+		Service.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangeCloakValues)
 		return
 	}
 
@@ -131,8 +124,8 @@ func DeleteSkinHandler(c *gin.Context) {
 		return
 	}
 
-	if err := Service.DeleteSkin(username); err != nil {
-		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSkin, err)
+	if err := Service.DeleteCloak(username); err != nil {
+		Service.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingCloak, err)
 		return
 	}
 

@@ -38,18 +38,23 @@ type EmailConfig struct {
 }
 
 type CaptchaConfig struct {
-	SiteKey        string
-	Client         *hcaptcha.Client
-	RegForm        *template.Template
-	AuthForm       *template.Template
-	PassResetForm  *template.Template
-	ChangePassForm *template.Template
-	ChangeSkinForm *template.Template
-	DeleteSkinForm *template.Template
+	SiteKey         string
+	Client          *hcaptcha.Client
+	RegForm         *template.Template
+	AuthForm        *template.Template
+	PassResetForm   *template.Template
+	ChangePassForm  *template.Template
+	ChangeSkinForm  *template.Template
+	DeleteSkinForm  *template.Template
+	ChangeCloakForm *template.Template
+	DeleteCloakForm *template.Template
 }
 
 type SkinConfig struct {
-	Bucket   *string
-	Uploader *s3manager.Uploader
-	Deleter  *s3.S3
+	SkinBucket    *string
+	SkinUploader  *s3manager.Uploader
+	SkinDeleter   *s3.S3
+	CloakBucket   *string
+	CloakUploader *s3manager.Uploader
+	CloakDeleter  *s3.S3
 }

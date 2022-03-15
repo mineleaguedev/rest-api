@@ -46,12 +46,16 @@ type Captcha interface {
 	RenderChangePassForm(c *gin.Context)
 	RenderChangeSkinForm(c *gin.Context)
 	RenderDeleteSkinForm(c *gin.Context)
+	RenderChangeCloakForm(c *gin.Context)
+	RenderDeleteCloakForm(c *gin.Context)
 	VerifyCaptcha(token string) (response hcaptcha.Response)
 }
 
 type Skin interface {
 	SetSkin(username string, file multipart.File) error
 	DeleteSkin(username string) error
+	SetCloak(username string, file multipart.File) error
+	DeleteCloak(username string) error
 }
 
 type Service struct {

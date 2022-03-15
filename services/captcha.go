@@ -71,6 +71,24 @@ func (s *CaptchaService) RenderDeleteSkinForm(c *gin.Context) {
 	}
 }
 
+func (s *CaptchaService) RenderChangeCloakForm(c *gin.Context) {
+	if err := s.config.ChangeCloakForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering change cloak form: %s\n", err.Error())
+		return
+	}
+}
+
+func (s *CaptchaService) RenderDeleteCloakForm(c *gin.Context) {
+	if err := s.config.DeleteCloakForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering delete cloak form: %s\n", err.Error())
+		return
+	}
+}
+
 func (s *CaptchaService) VerifyCaptcha(token string) (response hcaptcha.Response) {
 	return s.config.Client.VerifyToken(token)
 }
