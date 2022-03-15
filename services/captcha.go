@@ -53,6 +53,24 @@ func (s *CaptchaService) RenderChangePassForm(c *gin.Context) {
 	}
 }
 
+func (s *CaptchaService) RenderChangeSkinForm(c *gin.Context) {
+	if err := s.config.ChangeSkinForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering change skin form: %s\n", err.Error())
+		return
+	}
+}
+
+func (s *CaptchaService) RenderDeleteSkinForm(c *gin.Context) {
+	if err := s.config.DeleteSkinForm.Execute(c.Writer, map[string]string{
+		"SiteKey": s.config.SiteKey,
+	}); err != nil {
+		log.Printf("Error rendering delete skin form: %s\n", err.Error())
+		return
+	}
+}
+
 func (s *CaptchaService) VerifyCaptcha(token string) (response hcaptcha.Response) {
 	return s.config.Client.VerifyToken(token)
 }

@@ -7,6 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -95,16 +97,37 @@ func main() {
 	redisJsonHandler := rejson.NewReJSONHandler()
 	redisJsonHandler.SetGoRedisClient(redisClient)
 
+	// setup aws
+	awsRegion := aws.String(os.Getenv("aws.region"))
+
 	// setup email
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(os.Getenv("aws.ses.region")),
+		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
 			os.Getenv("aws.ses.access.key.id"),
 			os.Getenv("aws.ses.secret.access.key"),
 			"",
 		),
 	})
+	if err != nil {
+		log.Fatalf("Error connecting to email smtp: %s", err)
+	}
 	emailClient := ses.New(sess)
+
+	// setup skin
+	sess, err = session.NewSession(&aws.Config{
+		Region: awsRegion,
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("aws.s3.skin.access.key.id"),
+			os.Getenv("aws.s3.skin.secret.access.key"),
+			"",
+		),
+	})
+	if err != nil {
+		log.Fatalf("Error connecting to skin s3: %s", err)
+	}
+	uploader := s3manager.NewUploader(sess)
+	deleter := s3.New(sess)
 
 	service := services.NewService(
 		middleware,
@@ -137,6 +160,11 @@ func main() {
 			AuthForm:       template.Must(template.ParseFiles("./forms/auth_form.html")),
 			PassResetForm:  template.Must(template.ParseFiles("./forms/pass_reset_form.html")),
 			ChangePassForm: template.Must(template.ParseFiles("./forms/change_pass_form.html")),
+			ChangeSkinForm: template.Must(template.ParseFiles("./forms/change_skin_form.html")),
+		}, models.SkinConfig{
+			Bucket:   aws.String(os.Getenv("aws.s3.skin.bucket.name")),
+			Uploader: uploader,
+			Deleter:  deleter,
 		})
 
 	controllers.Controller(generalDB, miniGamesDB)
@@ -156,11 +184,15 @@ func main() {
 		auth.POST("/refresh", general.RefreshHandler)
 		auth.POST("/logout", general.LogoutHandler)
 		auth.GET("/changePass", service.RenderChangePassForm)
+		auth.GET("/changeSkin", service.RenderChangeSkinForm)
+		auth.GET("/deleteSkin", service.RenderDeleteSkinForm)
 	}
 
 	router.Use(general.AuthMiddleware())
 	{
 		router.POST("/changePass", general.ChangePassHandler)
+		router.POST("/changeSkin", general.ChangeSkinHandler)
+		router.POST("/deleteSkin", general.DeleteSkinHandler)
 	}
 
 	api := router.Group("/api")
