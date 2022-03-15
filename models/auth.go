@@ -24,3 +24,7 @@ type ChangePassRequest struct {
 	NewPassword string `form:"new-password" binding:"required"`
 	Captcha     string `form:"h-captcha-response" binding:"required"`
 }
+
+type ChangeSkinRequest struct {
+	Captcha string `form:"h-captcha-response" binding:"required"`
+}

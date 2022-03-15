@@ -7,10 +7,12 @@ var (
 	ErrMissingRegValues        = errors.New("missing reg values")
 	ErrMissingPassResetValues  = errors.New("missing password reset values")
 	ErrMissingChangePassValues = errors.New("missing change password values")
+	ErrMissingChangeSkinValues = errors.New("missing change skin values")
 
 	ErrInvalidUsername = errors.New("invalid username")
 	ErrInvalidPassword = errors.New("invalid password")
 	ErrInvalidCaptcha  = errors.New("invalid captcha")
+	ErrInvalidSkin     = errors.New("invalid skin")
 
 	ErrUserAlreadyExists = errors.New("username or email already exists")
 	ErrUserDoesNotExist  = errors.New("user does not exist")
@@ -44,4 +46,7 @@ var (
 	ErrRefreshTokenUserIdNotExists = errors.New("failed to get refresh token user id")
 
 	ErrSendingEmail = errors.New("error sending email")
+
+	ErrSettingSkin  = errors.New("error setting skin")
+	ErrDeletingSkin = errors.New("error deleting skin")
 )

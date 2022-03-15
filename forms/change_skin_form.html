@@ -1,0 +1,16 @@
+<html>
+
+<head>
+    <script src="https://hcaptcha.com/1/api.js" async defer></script>
+</head>
+
+<body>
+<form action="/changeSkin" method="POST">
+    <input type="file" name="skin">
+    <div class="h-captcha" data-sitekey="{{ .SiteKey }}"></div>
+    <br />
+    <input type="submit" value="Submit" />
+</form>
+</body>
+
+</html>

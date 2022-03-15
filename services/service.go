@@ -5,6 +5,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/kataras/hcaptcha"
 	"github.com/mineleaguedev/rest-api/models"
+	"mime/multipart"
 	"net/http"
 	"time"
 )
@@ -43,7 +44,14 @@ type Captcha interface {
 	RenderAuthForm(c *gin.Context)
 	RenderPassResetForm(c *gin.Context)
 	RenderChangePassForm(c *gin.Context)
+	RenderChangeSkinForm(c *gin.Context)
+	RenderDeleteSkinForm(c *gin.Context)
 	VerifyCaptcha(token string) (response hcaptcha.Response)
+}
+
+type Skin interface {
+	SetSkin(username string, file multipart.File) error
+	DeleteSkin(username string) error
 }
 
 type Service struct {
@@ -52,14 +60,17 @@ type Service struct {
 	Redis
 	Email
 	Captcha
+	Skin
 }
 
-func NewService(jwtMiddleware models.JWTMiddleware, redisConfig models.RedisConfig, emailConfig models.EmailConfig, captchaConfig models.CaptchaConfig) *Service {
+func NewService(jwtMiddleware models.JWTMiddleware, redisConfig models.RedisConfig, emailConfig models.EmailConfig,
+	captchaConfig models.CaptchaConfig, skinConfig models.SkinConfig) *Service {
 	return &Service{
 		Token:   NewTokenService(jwtMiddleware),
 		Err:     NewErrService(),
 		Redis:   NewRedisService(redisConfig),
 		Email:   NewEmailService(emailConfig),
 		Captcha: NewCaptchaService(captchaConfig),
+		Skin:    NewSkinService(skinConfig),
 	}
 }
