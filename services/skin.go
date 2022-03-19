@@ -18,22 +18,9 @@ func NewSkinService(skinConfig models.SkinConfig) *SkinService {
 	}
 }
 
-func (s *SkinService) SetSkin(username string, file multipart.File) error {
+func (s *SkinService) UploadSkin(username string, file multipart.File) error {
 	_, err := s.config.SkinUploader.Upload(&s3manager.UploadInput{
 		Bucket: s.config.SkinBucket,
-		Key:    aws.String(username + ".png"),
-		Body:   file,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *SkinService) SetCloak(username string, file multipart.File) error {
-	_, err := s.config.CloakUploader.Upload(&s3manager.UploadInput{
-		Bucket: s.config.CloakBucket,
 		Key:    aws.String(username + ".png"),
 		Body:   file,
 	})
@@ -48,6 +35,19 @@ func (s *SkinService) DeleteSkin(username string) error {
 	_, err := s.config.SkinDeleter.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: s.config.SkinBucket,
 		Key:    aws.String(username + ".png"),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SkinService) UploadCloak(username string, file multipart.File) error {
+	_, err := s.config.CloakUploader.Upload(&s3manager.UploadInput{
+		Bucket: s.config.CloakBucket,
+		Key:    aws.String(username + ".png"),
+		Body:   file,
 	})
 	if err != nil {
 		return err
