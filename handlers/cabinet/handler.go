@@ -2,6 +2,7 @@ package cabinet
 
 import (
 	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/mineleaguedev/rest-api/services"
 )
 

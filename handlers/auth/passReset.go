@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/mineleaguedev/rest-api/errors"
 	"github.com/mineleaguedev/rest-api/models"
 	"math/rand"

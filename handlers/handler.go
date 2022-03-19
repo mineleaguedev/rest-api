@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/mineleaguedev/rest-api/controllers"
 	"github.com/mineleaguedev/rest-api/handlers/auth"
 	"github.com/mineleaguedev/rest-api/handlers/cabinet"
