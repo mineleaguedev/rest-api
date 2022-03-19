@@ -20,6 +20,7 @@ type Token interface {
 type Err interface {
 	HandleErr(c *gin.Context, httpCode int, err error)
 	HandleInternalErr(c *gin.Context, httpCode int, err, internalErr error)
+	HandleDBErr(c *gin.Context, err error)
 }
 
 type Redis interface {
@@ -52,9 +53,9 @@ type Captcha interface {
 }
 
 type Skin interface {
-	SetSkin(username string, file multipart.File) error
+	UploadSkin(username string, file multipart.File) error
 	DeleteSkin(username string) error
-	SetCloak(username string, file multipart.File) error
+	UploadCloak(username string, file multipart.File) error
 	DeleteCloak(username string) error
 }
 
