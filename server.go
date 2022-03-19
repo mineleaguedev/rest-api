@@ -10,13 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/kataras/hcaptcha"
 	"github.com/mineleaguedev/rest-api/controllers"
-	"github.com/mineleaguedev/rest-api/general"
+	"github.com/mineleaguedev/rest-api/handlers"
 	"github.com/mineleaguedev/rest-api/models"
 	"github.com/mineleaguedev/rest-api/services"
 	"github.com/nitishm/go-rejson/v4"
@@ -187,54 +186,11 @@ func main() {
 			CloakUploader: cloakUploader,
 			CloakDeleter:  cloakDeleter,
 		})
+	handler := handlers.NewHandler(service, middleware, generalDB)
 
 	controllers.Controller(generalDB, miniGamesDB)
-	general.Setup(generalDB, service, middleware)
 
-	router := gin.Default()
-	auth := router.Group("/auth")
-	{
-		auth.GET("/reg", service.RenderRegForm)
-		auth.POST("/reg", general.RegHandler)
-		auth.GET("/reg/confirm/:token", general.ConfirmRegHandler)
-		auth.GET("/auth", service.RenderAuthForm)
-		auth.POST("/auth", general.AuthHandler)
-		auth.GET("/passReset", service.RenderPassResetForm)
-		auth.POST("/passReset", general.PassResetHandler)
-		auth.GET("/passReset/confirm/:token", general.ConfirmPassResetHandler)
-		auth.POST("/refresh", general.RefreshHandler)
-		auth.POST("/logout", general.LogoutHandler)
-		auth.GET("/changePass", service.RenderChangePassForm)
-		auth.GET("/changeSkin", service.RenderChangeSkinForm)
-		auth.GET("/deleteSkin", service.RenderDeleteSkinForm)
-		auth.GET("/changeCloak", service.RenderChangeCloakForm)
-		auth.GET("/deleteCloak", service.RenderDeleteCloakForm)
-	}
-
-	router.Use(general.AuthMiddleware())
-	{
-		router.POST("/changePass", general.ChangePassHandler)
-		router.POST("/changeSkin", general.ChangeSkinHandler)
-		router.POST("/deleteSkin", general.DeleteSkinHandler)
-		router.POST("/changeCloak", general.ChangeCloakHandler)
-		router.POST("/deleteCloak", general.DeleteCloakHandler)
-		router.POST("/transferMoney", general.TransferMoneyHandler)
-	}
-
-	api := router.Group("/api")
-	{
-		api.POST("/user", controllers.CreateUser)
-		api.GET("/user/name/:name", controllers.GetUser)
-		api.PUT("/user/exp", controllers.UpdateUserExp)
-		api.PUT("/user/rank", controllers.UpdateUserRank)
-		api.PUT("/user/playtime", controllers.UpdateUserPlaytime)
-		api.PUT("/user/lastSeen", controllers.UpdateUserLastSeen)
-		api.POST("/ban", controllers.BanUser)
-		api.POST("/unban", controllers.UnbanUser)
-		api.POST("/mute", controllers.MuteUser)
-		api.POST("/unmute", controllers.UnmuteUser)
-	}
-
+	router := handler.InitRoutes()
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("Error starting server: %s", err)
 	}

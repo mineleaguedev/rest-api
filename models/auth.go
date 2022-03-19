@@ -25,7 +25,7 @@ type ChangePassRequest struct {
 	Captcha     string `form:"h-captcha-response" binding:"required"`
 }
 
-type ChangeSkinRequest struct {
+type CaptchaRequest struct {
 	Captcha string `form:"h-captcha-response" binding:"required"`
 }
 
