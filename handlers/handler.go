@@ -30,7 +30,7 @@ func NewHandler(services *services.Service, middleware models.JWTMiddleware, gen
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
-	authGroup := router.Group("/auth")
+	authGroup := router.Group("/")
 	{
 		authGroup.POST("/reg", h.auth.RegHandler)
 		authGroup.GET("/reg/confirm/:token", h.auth.RegConfirmHandler)
@@ -50,7 +50,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		authGroup.GET("/deleteCloak", h.services.RenderDeleteCloakForm)
 	}
 
-	cabinetGroup := router.Group("/cabinet").Use(h.auth.AuthMiddleware())
+	cabinetGroup := router.Group("/").Use(h.auth.AuthMiddleware())
 	{
 		cabinetGroup.POST("/changePass", h.cabinet.PassChangeHandler)
 		cabinetGroup.POST("/changeSkin", h.cabinet.SkinChangeHandler)
@@ -60,7 +60,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		cabinetGroup.POST("/transferMoney", h.cabinet.MoneyTransferHandler)
 	}
 
-	minigamesGroup := router.Group("/minigames")
+	minigamesGroup := router.Group("/")
 	{
 		minigamesGroup.POST("/player", h.minigames.PlayerCreateHandler)
 		minigamesGroup.GET("/user/name/:name", h.minigames.PlayerGetHandler)

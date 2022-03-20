@@ -6,7 +6,7 @@ email:
 
       <p>Для того чтобы подтвердить регистрацию, перейдите по ссылке:</p>
       
-      <p>https://mineleague.ru/auth/reg/confirm/%token%</p>
+      <p>https://api.mineleague.ru/reg/confirm/%token%</p>
       
       <p><b>С уважением, команда MineLeague!</b></p>
       
@@ -21,7 +21,7 @@ email:
     subject: "Восстановление пароля MineLeague.ru"
     htmlBody: "<p>На Ваш аккаунт %username% было запрошено восстановление пароля с IP адреса %ip_address%.</p>
       
-      <p>Для того чтобы восстановить пароль, перейдите по ссылке - https://mineleague.ru/auth/passReset/confirm/%pass_reset_token%</p>
+      <p>Для того чтобы восстановить пароль, перейдите по ссылке - https://api.mineleague.ru/passReset/confirm/%pass_reset_token%</p>
       
       <p>Если это отправили не Вы, просто проигнорируйте это сообщение.</p>
       

@@ -51,8 +51,9 @@ func (h *Handler) PlayerGetHandler(c *gin.Context) {
 	var player = models.Player{Username: username}
 
 	var rank sql.NullString
+	var lastSeen sql.NullTime
 	if err := h.db.QueryRow("SELECT `id`, `exp`, `rank`, `coins`, `playtime`, `last_seen` FROM `players` WHERE `username` = ?",
-		username).Scan(&player.ID, &player.Exp, &rank, &player.Coins, &player.Playtime, &player.LastSeen); err != nil {
+		username).Scan(&player.ID, &player.Exp, &rank, &player.Coins, &player.Playtime, &lastSeen); err != nil {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrPlayerDoesNotExist)
 		} else {
@@ -63,29 +64,34 @@ func (h *Handler) PlayerGetHandler(c *gin.Context) {
 	if rank.Valid {
 		player.Rank = &rank.String
 	}
+	player.LastSeen = lastSeen.Time.Unix()
 
 	// ban info
+	var ban models.BanInfo
 	var banTo sql.NullTime
 	if err := h.db.QueryRow("SELECT `ban_to`, `reason`, `admin` FROM `bans` WHERE `username` = ? AND `status` = true",
-		username).Scan(&banTo, &player.Ban.Reason, &player.Ban.Admin); err != nil && err != sql.ErrNoRows {
+		username).Scan(&banTo, &ban.Reason, &ban.Admin); err != nil && err != sql.ErrNoRows {
 		h.services.HandleInternalErr(c, errors.ErrMiniGamesDBGettingPlayerBanInfo, err)
 		return
 	}
 	if banTo.Valid {
 		banToInt64 := banTo.Time.Unix()
 		player.Ban.To = &banToInt64
+		player.Ban = &ban
 	}
 
 	// mute info
+	var mute models.MuteInfo
 	var muteTo sql.NullTime
 	if err := h.db.QueryRow("SELECT `mute_to`, `reason`, `admin` FROM `mutes` WHERE `username` = ? AND `status` = true",
-		username).Scan(&muteTo, &player.Mute.Reason, &player.Mute.Admin); err != nil && err != sql.ErrNoRows {
+		username).Scan(&muteTo, &mute.Reason, &mute.Admin); err != nil && err != sql.ErrNoRows {
 		h.services.HandleInternalErr(c, errors.ErrMiniGamesDBGettingPlayerMuteInfo, err)
 		return
 	}
 	if muteTo.Valid {
 		muteToInt64 := muteTo.Time.Unix()
 		player.Mute.To = &muteToInt64
+		player.Mute = &mute
 	}
 
 	c.JSON(http.StatusOK, models.PlayerResponse{
