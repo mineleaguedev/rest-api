@@ -14,7 +14,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/kataras/hcaptcha"
-	"github.com/mineleaguedev/rest-api/controllers"
 	"github.com/mineleaguedev/rest-api/handlers"
 	"github.com/mineleaguedev/rest-api/models"
 	"github.com/mineleaguedev/rest-api/services"
@@ -186,9 +185,7 @@ func main() {
 			CloakUploader: cloakUploader,
 			CloakDeleter:  cloakDeleter,
 		})
-	handler := handlers.NewHandler(service, middleware, generalDB)
-
-	controllers.Controller(generalDB, miniGamesDB)
+	handler := handlers.NewHandler(service, middleware, generalDB, miniGamesDB)
 
 	router := handler.InitRoutes()
 	if err := router.Run(":8080"); err != nil {
