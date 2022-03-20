@@ -27,8 +27,8 @@ func validPassword(password string) (sevenOrMore, number bool) {
 	return
 }
 
-func (h *Handler) ChangePassHandler(c *gin.Context) {
-	var input models.ChangePassRequest
+func (h *Handler) PassChangeHandler(c *gin.Context) {
+	var input models.PassChangeRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangePassValues)
@@ -52,14 +52,14 @@ func (h *Handler) ChangePassHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(input.OldPassword, oldHashedPassword)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrUnhashingPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrUnhashingPassword, err)
 		return
 	}
 
@@ -70,12 +70,12 @@ func (h *Handler) ChangePassHandler(c *gin.Context) {
 
 	newHashedPassword, err := argon2id.CreateHash(input.NewPassword, argon2id.DefaultParams)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrHashingPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrHashingPassword, err)
 		return
 	}
 
 	if _, err := h.db.Exec("UPDATE `users` SET `password_hash` = ? WHERE `id` = ?", newHashedPassword, userId); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDBUpdatingUserPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrDBUpdatingUserPassword, err)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *Handler) ChangePassHandler(c *gin.Context) {
 	}
 
 	if err := h.services.SendChangePassEmail(email, ip); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSendingEmail, err)
+		h.services.HandleInternalErr(c, errors.ErrSendingEmail, err)
 		return
 	}
 

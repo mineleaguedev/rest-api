@@ -3,6 +3,11 @@ package errors
 import "errors"
 
 var (
+	ErrDBGettingLastInsertId = errors.New("error getting last insert id from insert database query")
+	ErrDBGettingRowsAffected = errors.New("error getting rows affected from update database query")
+)
+
+var (
 	ErrMissingAuthValues          = errors.New("missing auth values")
 	ErrMissingRegValues           = errors.New("missing reg values")
 	ErrMissingPassResetValues     = errors.New("missing password reset values")
@@ -47,19 +52,54 @@ var (
 	ErrRefreshTokenUuidNotExists   = errors.New("failed to get refresh token uuid")
 	ErrRefreshTokenUserIdNotExists = errors.New("failed to get refresh token user id")
 
-	ErrNotEnoughMoney     = errors.New("error not enough money")
-	ErrMoneySubtraction   = errors.New("error money subtraction")
-	ErrMoneyAddition      = errors.New("error money addition")
-	ErrSavingTransferInfo = errors.New("error saving transfer info")
-
-	ErrDBQuery                = errors.New("error database query")
-	ErrDBRegisteringUser      = errors.New("error adding user to database")
-	ErrDBUpdatingUserPassword = errors.New("error updating password in database")
-
 	ErrUploadingSkin  = errors.New("error uploading skin")
 	ErrDeletingSkin   = errors.New("error deleting skin")
 	ErrUploadingCloak = errors.New("error uploading cloak")
 	ErrDeletingCloak  = errors.New("error deleting cloak")
 
+	ErrNotEnoughMoney     = errors.New("error not enough money")
+	ErrMoneySubtraction   = errors.New("error money subtraction")
+	ErrMoneyAddition      = errors.New("error money addition")
+	ErrSavingTransferInfo = errors.New("error saving transfer info")
+
+	ErrDBRegisteringUser      = errors.New("error inserting user to general database")
+	ErrDBGettingUser          = errors.New("error getting user from general database")
+	ErrDBUpdatingUserPassword = errors.New("error updating password in general database")
+
 	ErrSendingEmail = errors.New("error sending email")
+)
+
+var (
+	ErrMissingPlayerCreateValues         = errors.New("missing player create values")
+	ErrMissingPlayerUpdateExpValues      = errors.New("missing player update exp values")
+	ErrMissingPlayerUpdateRankValues     = errors.New("missing player update rank values")
+	ErrMissingPlayerUpdateCoinsValues    = errors.New("missing player update coins values")
+	ErrMissingPlayerUpdatePlaytimeValues = errors.New("missing player update playtime values")
+	ErrMissingPlayerUpdateLastSeenValues = errors.New("missing player update last seen values")
+	ErrMissingPlayerBanValues            = errors.New("missing player ban values")
+	ErrMissingPlayerUnbanValues          = errors.New("missing player unban values")
+	ErrMissingPlayerMuteValues           = errors.New("missing player mute values")
+	ErrMissingPlayerUnmuteValues         = errors.New("missing player unmute values")
+
+	ErrPlayerAlreadyExists = errors.New("player already exists")
+	ErrPlayerDoesNotExist  = errors.New("player does not exist")
+
+	ErrPlayerIsNotBanned = errors.New("player is not banned")
+	ErrPlayerIsNotMuted  = errors.New("player is not muted")
+
+	ErrMiniGamesDBCreatingPlayer         = errors.New("error inserting player to minigames database")
+	ErrMiniGamesDBGettingPlayer          = errors.New("error getting player from minigames database")
+	ErrMiniGamesDBUpdatingPlayerExp      = errors.New("error updating player exp in minigames database")
+	ErrMiniGamesDBUpdatingPlayerRank     = errors.New("error updating player rank in minigames database")
+	ErrMiniGamesDBUpdatingPlayerCoins    = errors.New("error updating player coins in minigames database")
+	ErrMiniGamesDBUpdatingPlayerPlaytime = errors.New("error updating player playtime in minigames database")
+	ErrMiniGamesDBUpdatingPlayerLastSeen = errors.New("error updating player last seen in minigames database")
+
+	ErrMiniGamesDBGettingPlayerBanInfo = errors.New("error getting player's ban info")
+	ErrMiniGamesDBBanningPlayer        = errors.New("error inserting player ban info to minigames database")
+	ErrMiniGamesDBUnbanningPlayer      = errors.New("error updating player ban status in minigames database")
+
+	ErrMiniGamesDBGettingPlayerMuteInfo = errors.New("error getting player's mute info")
+	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info to minigames database")
+	ErrMiniGamesDBUnmutingPlayer        = errors.New("error updating player mute status in minigames database")
 )

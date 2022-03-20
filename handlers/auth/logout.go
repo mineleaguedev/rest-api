@@ -15,7 +15,7 @@ func (h *Handler) LogoutHandler(c *gin.Context) {
 	}
 
 	if deleted, err := h.services.DeleteSession(accessDetails.AccessUuid); err != nil || deleted == 0 {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSession, err)
+		h.services.HandleInternalErr(c, errors.ErrDeletingSession, err)
 		return
 	}
 

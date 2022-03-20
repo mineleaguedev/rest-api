@@ -53,17 +53,17 @@ func (h *Handler) RefreshHandler(c *gin.Context) {
 
 	td, err := h.services.CreateToken(userId)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrFailedTokenCreation, err)
+		h.services.HandleInternalErr(c, errors.ErrFailedTokenCreation, err)
 		return
 	}
 
 	if deleted, err := h.services.DeleteSession(refreshUuid); err != nil || deleted == 0 {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSession, err)
+		h.services.HandleInternalErr(c, errors.ErrDeletingSession, err)
 		return
 	}
 
 	if err := h.services.SaveAuthSession(userId, td); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSavingAuthSession, err)
+		h.services.HandleInternalErr(c, errors.ErrSavingAuthSession, err)
 		return
 	}
 

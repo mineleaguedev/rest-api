@@ -17,7 +17,7 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 
 		userId, err := h.services.GetAuthSession(accessDetails)
 		if err != nil {
-			h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrGettingAuthSession, err)
+			h.services.HandleInternalErr(c, errors.ErrGettingAuthSession, err)
 			c.Abort()
 			return
 		}

@@ -71,7 +71,7 @@ func (h *Handler) RegHandler(c *gin.Context) {
 
 	var exists bool
 	if err := h.db.QueryRow("SELECT 1 FROM `users` WHERE `username` = ? OR `email` = ?", input.Username, input.Email).Scan(&exists); err != nil && err != sql.ErrNoRows {
-		h.services.HandleDBErr(c, err)
+		h.services.HandleInternalErr(c, errors.ErrDBRegisteringUser, err)
 		return
 	}
 
@@ -82,19 +82,19 @@ func (h *Handler) RegHandler(c *gin.Context) {
 
 	hashedPassword, err := argon2id.CreateHash(input.Password, argon2id.DefaultParams)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrHashingPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrHashingPassword, err)
 		return
 	}
 
 	regToken := generateToken(40)
 
 	if err := h.services.SaveRegSession(regToken, input.Username, input.Email, hashedPassword, h.middleware.RegTokenTime); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSavingRegSession, err)
+		h.services.HandleInternalErr(c, errors.ErrSavingRegSession, err)
 		return
 	}
 
 	if err := h.services.SendRegEmail(input.Email, regToken); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSendingEmail, err)
+		h.services.HandleInternalErr(c, errors.ErrSendingEmail, err)
 		return
 	}
 
@@ -103,23 +103,23 @@ func (h *Handler) RegHandler(c *gin.Context) {
 	})
 }
 
-func (h *Handler) ConfirmRegHandler(c *gin.Context) {
+func (h *Handler) RegConfirmHandler(c *gin.Context) {
 	token := c.Param("token")
 
 	regInfo, err := h.services.GetRegSession(token)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrGettingRegSession, err)
+		h.services.HandleInternalErr(c, errors.ErrGettingRegSession, err)
 		return
 	}
 
 	if deleted, err := h.services.DeleteSession(token); err != nil || deleted == 0 {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSession, err)
+		h.services.HandleInternalErr(c, errors.ErrDeletingSession, err)
 		return
 	}
 
 	if _, err := h.db.Exec("INSERT INTO `users` (`username`, `email`, `password_hash`) VALUES (?, ?, ?)",
 		regInfo.Username, regInfo.Email, regInfo.HashedPassword); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDBRegisteringUser, err)
+		h.services.HandleInternalErr(c, errors.ErrDBRegisteringUser, err)
 		return
 	}
 

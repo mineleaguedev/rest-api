@@ -15,7 +15,7 @@ import (
 
 const MaxSkinUploadSize = 4 << 10 // 4 kb
 
-func (h *Handler) ChangeSkinHandler(c *gin.Context) {
+func (h *Handler) SkinChangeHandler(c *gin.Context) {
 	var input models.CaptchaRequest
 
 	if err := c.ShouldBind(&input); err != nil {
@@ -92,13 +92,13 @@ func (h *Handler) ChangeSkinHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	if err := h.services.UploadSkin(username, file); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrUploadingSkin, err)
+		h.services.HandleInternalErr(c, errors.ErrUploadingSkin, err)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (h *Handler) ChangeSkinHandler(c *gin.Context) {
 	})
 }
 
-func (h *Handler) DeleteSkinHandler(c *gin.Context) {
+func (h *Handler) SkinDeleteHandler(c *gin.Context) {
 	var input models.CaptchaRequest
 
 	if err := c.ShouldBind(&input); err != nil {
@@ -127,13 +127,13 @@ func (h *Handler) DeleteSkinHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	if err := h.services.DeleteSkin(username); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSkin, err)
+		h.services.HandleInternalErr(c, errors.ErrDeletingSkin, err)
 		return
 	}
 

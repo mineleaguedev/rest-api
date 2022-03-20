@@ -29,14 +29,14 @@ func (h *Handler) AuthHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(input.Password, hashedPassword)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrUnhashingPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrUnhashingPassword, err)
 		return
 	}
 
@@ -47,12 +47,12 @@ func (h *Handler) AuthHandler(c *gin.Context) {
 
 	td, err := h.services.CreateToken(userId)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrFailedTokenCreation, err)
+		h.services.HandleInternalErr(c, errors.ErrFailedTokenCreation, err)
 		return
 	}
 
 	if err := h.services.SaveAuthSession(userId, td); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSavingAuthSession, err)
+		h.services.HandleInternalErr(c, errors.ErrSavingAuthSession, err)
 		return
 	}
 

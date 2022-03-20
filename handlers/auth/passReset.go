@@ -37,7 +37,7 @@ func (h *Handler) PassResetHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
@@ -45,7 +45,7 @@ func (h *Handler) PassResetHandler(c *gin.Context) {
 	token := generateToken(40)
 
 	if err := h.services.SavePassResetSession(token, userId, h.middleware.PassResetTokenTime); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSavingPassResetSession, err)
+		h.services.HandleInternalErr(c, errors.ErrSavingPassResetSession, err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (h *Handler) PassResetHandler(c *gin.Context) {
 	}
 
 	if err := h.services.SendPassResetEmail(input.Email, token, input.Username, ip); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSendingEmail, err)
+		h.services.HandleInternalErr(c, errors.ErrSendingEmail, err)
 		return
 	}
 
@@ -93,17 +93,17 @@ func generatePassword(passwordLength, minNum, minUpperCase int) string {
 	return string(inRune)
 }
 
-func (h *Handler) ConfirmPassResetHandler(c *gin.Context) {
+func (h *Handler) PassResetConfirmHandler(c *gin.Context) {
 	token := c.Param("token")
 
 	userId, err := h.services.GetPassResetSession(token)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrGettingPassResetSession, err)
+		h.services.HandleInternalErr(c, errors.ErrGettingPassResetSession, err)
 		return
 	}
 
 	if deleted, err := h.services.DeleteSession(token); err != nil || deleted == 0 {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingSession, err)
+		h.services.HandleInternalErr(c, errors.ErrDeletingSession, err)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *Handler) ConfirmPassResetHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
@@ -120,17 +120,17 @@ func (h *Handler) ConfirmPassResetHandler(c *gin.Context) {
 	newPassword := generatePassword(12, 1, 1)
 	hashedPassword, err := argon2id.CreateHash(newPassword, argon2id.DefaultParams)
 	if err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrHashingPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrHashingPassword, err)
 		return
 	}
 
 	if _, err := h.db.Exec("UPDATE `users` SET `password_hash` = ? WHERE `id` = ?", hashedPassword, userId); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDBUpdatingUserPassword, err)
+		h.services.HandleInternalErr(c, errors.ErrDBUpdatingUserPassword, err)
 		return
 	}
 
 	if err := h.services.SendNewPassEmail(email, username, newPassword); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSendingEmail, err)
+		h.services.HandleInternalErr(c, errors.ErrSendingEmail, err)
 		return
 	}
 

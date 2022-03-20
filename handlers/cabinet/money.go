@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func (h *Handler) TransferMoneyHandler(c *gin.Context) {
-	var input models.TransferMoneyRequest
+func (h *Handler) MoneyTransferHandler(c *gin.Context) {
+	var input models.MoneyTransferRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingTransferMoneyValues)
@@ -29,7 +29,7 @@ func (h *Handler) TransferMoneyHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
@@ -44,24 +44,24 @@ func (h *Handler) TransferMoneyHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	if _, err := h.db.Exec("UPDATE `users` SET `money` = `money` - ? WHERE `id` LIKE ?", input.Amount, userId); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrMoneySubtraction, err)
+		h.services.HandleInternalErr(c, errors.ErrMoneySubtraction, err)
 		return
 	}
 
 	if _, err := h.db.Exec("UPDATE `users` SET `money` = `money` + ? WHERE `username` LIKE ?", input.Amount, input.Username); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrMoneyAddition, err)
+		h.services.HandleInternalErr(c, errors.ErrMoneyAddition, err)
 		return
 	}
 
 	if _, err := h.db.Exec("INSERT INTO `transfers` (`from_id`, `to_id`, `amount`) VALUES (?, ?, ?)",
 		userId, toId, input.Amount); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrSavingTransferInfo, err)
+		h.services.HandleInternalErr(c, errors.ErrSavingTransferInfo, err)
 		return
 	}
 

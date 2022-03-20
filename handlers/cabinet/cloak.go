@@ -15,7 +15,7 @@ import (
 
 const MaxCloakUploadSize = 2 << 10 // 2 kb
 
-func (h *Handler) ChangeCloakHandler(c *gin.Context) {
+func (h *Handler) CloakChangeHandler(c *gin.Context) {
 	var input models.CaptchaRequest
 
 	if err := c.ShouldBind(&input); err != nil {
@@ -92,13 +92,13 @@ func (h *Handler) ChangeCloakHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	if err := h.services.UploadCloak(username, file); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrUploadingCloak, err)
+		h.services.HandleInternalErr(c, errors.ErrUploadingCloak, err)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (h *Handler) ChangeCloakHandler(c *gin.Context) {
 	})
 }
 
-func (h *Handler) DeleteCloakHandler(c *gin.Context) {
+func (h *Handler) CloakDeleteHandler(c *gin.Context) {
 	var input models.CaptchaRequest
 
 	if err := c.ShouldBind(&input); err != nil {
@@ -127,13 +127,13 @@ func (h *Handler) DeleteCloakHandler(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrUserDoesNotExist)
 		} else {
-			h.services.HandleDBErr(c, err)
+			h.services.HandleInternalErr(c, errors.ErrDBGettingUser, err)
 		}
 		return
 	}
 
 	if err := h.services.DeleteCloak(username); err != nil {
-		h.services.HandleInternalErr(c, http.StatusInternalServerError, errors.ErrDeletingCloak, err)
+		h.services.HandleInternalErr(c, errors.ErrDeletingCloak, err)
 		return
 	}
 

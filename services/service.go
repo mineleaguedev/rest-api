@@ -19,8 +19,7 @@ type Token interface {
 
 type Err interface {
 	HandleErr(c *gin.Context, httpCode int, err error)
-	HandleInternalErr(c *gin.Context, httpCode int, err, internalErr error)
-	HandleDBErr(c *gin.Context, err error)
+	HandleInternalErr(c *gin.Context, err, internalErr error)
 }
 
 type Redis interface {
