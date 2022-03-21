@@ -31,12 +31,12 @@ func (s *EmailService) SendRegEmail(to, token string) error {
 		Message: &ses.Message{
 			Body: &ses.Body{
 				Html: &ses.Content{
-					Charset: aws.String(s.config.RegCharSet),
+					Charset: aws.String("UTF-8"),
 					Data:    aws.String(htmlBody),
 				},
 			},
 			Subject: &ses.Content{
-				Charset: aws.String(s.config.RegCharSet),
+				Charset: aws.String("UTF-8"),
 				Data:    aws.String(s.config.RegSubject),
 			},
 		},
@@ -69,12 +69,12 @@ func (s *EmailService) SendPassResetEmail(to, token, username, ipAddress string)
 		Message: &ses.Message{
 			Body: &ses.Body{
 				Html: &ses.Content{
-					Charset: aws.String(s.config.PassResetCharSet),
+					Charset: aws.String("UTF-8"),
 					Data:    aws.String(htmlBody),
 				},
 			},
 			Subject: &ses.Content{
-				Charset: aws.String(s.config.PassResetCharSet),
+				Charset: aws.String("UTF-8"),
 				Data:    aws.String(s.config.PassResetSubject),
 			},
 		},
@@ -107,12 +107,12 @@ func (s *EmailService) SendNewPassEmail(to, username, password string) error {
 		Message: &ses.Message{
 			Body: &ses.Body{
 				Html: &ses.Content{
-					Charset: aws.String(s.config.NewPassCharSet),
+					Charset: aws.String("UTF-8"),
 					Data:    aws.String(htmlBody),
 				},
 			},
 			Subject: &ses.Content{
-				Charset: aws.String(s.config.NewPassCharSet),
+				Charset: aws.String("UTF-8"),
 				Data:    aws.String(s.config.NewPassSubject),
 			},
 		},
@@ -144,12 +144,12 @@ func (s *EmailService) SendChangePassEmail(to, ipAddress string) error {
 		Message: &ses.Message{
 			Body: &ses.Body{
 				Html: &ses.Content{
-					Charset: aws.String(s.config.ChangePassCharSet),
+					Charset: aws.String("UTF-8"),
 					Data:    aws.String(htmlBody),
 				},
 			},
 			Subject: &ses.Content{
-				Charset: aws.String(s.config.ChangePassCharSet),
+				Charset: aws.String("UTF-8"),
 				Data:    aws.String(s.config.ChangePassSubject),
 			},
 		},

@@ -116,8 +116,8 @@ func main() {
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("aws.s3.skin.access.key.id"),
-			os.Getenv("aws.s3.skin.secret.access.key"),
+			os.Getenv("aws.s3.skins.access.key.id"),
+			os.Getenv("aws.s3.skins.secret.access.key"),
 			"",
 		),
 	})
@@ -131,8 +131,8 @@ func main() {
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("aws.s3.cloak.access.key.id"),
-			os.Getenv("aws.s3.cloak.secret.access.key"),
+			os.Getenv("aws.s3.cloaks.access.key.id"),
+			os.Getenv("aws.s3.cloaks.secret.access.key"),
 			"",
 		),
 	})
@@ -152,19 +152,15 @@ func main() {
 			RegFrom:            viper.GetString("email.reg.from"),
 			RegSubject:         viper.GetString("email.reg.subject"),
 			RegHtmlBody:        viper.GetString("email.reg.htmlBody"),
-			RegCharSet:         viper.GetString("email.reg.charSet"),
 			PassResetFrom:      viper.GetString("email.passReset.from"),
 			PassResetSubject:   viper.GetString("email.passReset.subject"),
 			PassResetHtmlBody:  viper.GetString("email.passReset.htmlBody"),
-			PassResetCharSet:   viper.GetString("email.passReset.charSet"),
 			NewPassFrom:        viper.GetString("email.newPass.from"),
 			NewPassSubject:     viper.GetString("email.newPass.subject"),
 			NewPassHtmlBody:    viper.GetString("email.newPass.htmlBody"),
-			NewPassCharSet:     viper.GetString("email.newPass.charSet"),
 			ChangePassFrom:     viper.GetString("email.changePass.from"),
 			ChangePassSubject:  viper.GetString("email.changePass.subject"),
 			ChangePassHtmlBody: viper.GetString("email.changePass.htmlBody"),
-			ChangePassCharSet:  viper.GetString("email.changePass.charSet"),
 			Client:             emailClient,
 		}, models.CaptchaConfig{
 			SiteKey:         os.Getenv("hcaptcha.site.key"),
@@ -178,10 +174,10 @@ func main() {
 			ChangeCloakForm: template.Must(template.ParseFiles("./forms/change_cloak_form.html")),
 			DeleteCloakForm: template.Must(template.ParseFiles("./forms/delete_cloak_form.html")),
 		}, models.SkinConfig{
-			SkinBucket:    aws.String(os.Getenv("aws.s3.skin.bucket.name")),
+			SkinBucket:    aws.String(os.Getenv("aws.s3.skins.bucket.name")),
 			SkinUploader:  skinUploader,
 			SkinDeleter:   skinDeleter,
-			CloakBucket:   aws.String(os.Getenv("aws.s3.cloak.bucket.name")),
+			CloakBucket:   aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
 			CloakUploader: cloakUploader,
 			CloakDeleter:  cloakDeleter,
 		})

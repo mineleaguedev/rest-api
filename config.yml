@@ -15,7 +15,6 @@ email:
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
-    charSet: "UTF-8"
   passReset:
     from: "support@mineleague.ru"
     subject: "Восстановление пароля MineLeague.ru"
@@ -32,7 +31,6 @@ email:
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
-    charSet: "UTF-8"
   newPass:
     from: "support@mineleague.ru"
     subject: "Новый пароль на MineLeague.ru"
@@ -50,7 +48,6 @@ email:
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
-    charSet: "UTF-8"
   changePass:
     from: "support@mineleague.ru"
     subject: "Смена пароля на MineLeague.ru"
@@ -65,4 +62,3 @@ email:
       <br>Тех. поддержка - support.mineleague.ru</br>
       <br>Группа ВК - vk.com/mineleague</br>
       <br>Сайт - mineleague.ru</br></p>"
-    charSet: "UTF-8"
