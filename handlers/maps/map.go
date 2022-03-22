@@ -156,12 +156,12 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 
 	contents, err := h.services.GetMiniGameMapsList(minigame)
 	if err != nil {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMiniGameMapsList)
+		h.services.HandleInternalErr(c, errors.ErrS3GettingMiniGameMapsList, err)
 		return
 	}
 
 	if len(contents) == 0 {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3EmptyMiniGameMapsList)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrS3EmptyMiniGameMapsList)
 		return
 	}
 
@@ -264,12 +264,12 @@ func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
 
 	contents, err := h.services.GetMiniGameFormatMapsList(minigame, format)
 	if err != nil {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMiniGameFormatMapsList)
+		h.services.HandleInternalErr(c, errors.ErrS3GettingMiniGameFormatMapsList, err)
 		return
 	}
 
 	if len(contents) == 0 {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3EmptyMiniGameFormatMapsList)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrS3EmptyMiniGameFormatMapsList)
 		return
 	}
 
@@ -331,19 +331,19 @@ func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
 	})
 }
 
-func (h *Handler) MiniGameFormatMapVersionsGetHandler(c *gin.Context) {
+func (h *Handler) MapVersionsGetHandler(c *gin.Context) {
 	minigame := c.Param("minigame")
 	format := c.Param("format")
 	mapName := c.Param("map")
 
 	contents, err := h.services.GetMiniGameFormatMapVersionsList(minigame, format, mapName)
 	if err != nil {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMiniGameFormatMapVersionsList)
+		h.services.HandleInternalErr(c, errors.ErrS3GettingMiniGameFormatMapVersionsList, err)
 		return
 	}
 
 	if len(contents) == 0 {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3EmptyMiniGameFormatMapVersionsList)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrS3EmptyMiniGameFormatMapVersionsList)
 		return
 	}
 
@@ -376,4 +376,34 @@ func (h *Handler) MiniGameFormatMapVersionsGetHandler(c *gin.Context) {
 		Success:  true,
 		Versions: versionsList,
 	})
+}
+
+func (h *Handler) MapWorldGetHandler(c *gin.Context) {
+	minigame := c.Param("minigame")
+	format := c.Param("format")
+	mapName := c.Param("map")
+	version := c.Param("version")
+
+	filePath, fileName, err := h.services.DownloadMapWorld(minigame, format, mapName, version)
+	if err != nil {
+		h.services.HandleInternalErr(c, errors.ErrS3DownloadingMapWorld, err)
+		return
+	}
+
+	c.FileAttachment(*filePath, *fileName)
+}
+
+func (h *Handler) MapConfigGetHandler(c *gin.Context) {
+	minigame := c.Param("minigame")
+	format := c.Param("format")
+	mapName := c.Param("map")
+	version := c.Param("version")
+
+	filePath, fileName, err := h.services.DownloadMapConfig(minigame, format, mapName, version)
+	if err != nil {
+		h.services.HandleInternalErr(c, errors.ErrS3DownloadingMapConfig, err)
+		return
+	}
+
+	c.FileAttachment(*filePath, *fileName)
 }
