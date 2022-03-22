@@ -59,6 +59,7 @@ type S3 interface {
 	DeleteCloak(username string) error
 	GetMapsList() ([]*s3.Object, error)
 	GetMiniGameMapsList(minigame string) ([]*s3.Object, error)
+	GetMiniGameFormatMapsList(minigame, format string) ([]*s3.Object, error)
 }
 
 type Service struct {

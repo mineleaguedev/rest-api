@@ -35,8 +35,8 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 
 				if isCanAdd || len(minigamesList) == 0 {
 					minigamesList = append(minigamesList, models.MiniGames{
-						Name:   minigameName,
-						Format: nil,
+						Name:    minigameName,
+						Formats: nil,
 					})
 				}
 			} else if index == 1 {
@@ -49,7 +49,7 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 						continue
 					}
 
-					for _, format := range minigame.Format {
+					for _, format := range minigame.Formats {
 						if format.Format == formatName {
 							continue
 						}
@@ -57,10 +57,10 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 						break
 					}
 
-					if isCanAdd || len(minigame.Format) == 0 {
-						minigame.Format = append(minigame.Format, models.Format{
+					if isCanAdd || len(minigame.Formats) == 0 {
+						minigame.Formats = append(minigame.Formats, models.Format{
 							Format: formatName,
-							Map:    nil,
+							Maps:   nil,
 						})
 						minigamesList[minigameIndex] = minigame
 					}
@@ -76,13 +76,13 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 						continue
 					}
 
-					for formatIndex, format := range minigame.Format {
+					for formatIndex, format := range minigame.Formats {
 						if format.Format != formatName {
 							continue
 						}
 
 						var isCanAdd bool
-						for _, minigameMap := range format.Map {
+						for _, minigameMap := range format.Maps {
 							if minigameMap.Name == mapName {
 								continue
 							}
@@ -90,12 +90,12 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 							break
 						}
 
-						if isCanAdd || len(format.Map) == 0 {
-							format.Map = append(format.Map, models.Map{
+						if isCanAdd || len(format.Maps) == 0 {
+							format.Maps = append(format.Maps, models.Map{
 								Name:     mapName,
 								Versions: nil,
 							})
-							minigamesList[minigameIndex].Format[formatIndex] = format
+							minigamesList[minigameIndex].Formats[formatIndex] = format
 						}
 						break
 					}
@@ -112,12 +112,12 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 						continue
 					}
 
-					for formatIndex, format := range minigame.Format {
+					for formatIndex, format := range minigame.Formats {
 						if format.Format != formatName {
 							continue
 						}
 
-						for mapIndex, minigameMap := range format.Map {
+						for mapIndex, minigameMap := range format.Maps {
 							if minigameMap.Name != mapName {
 								continue
 							}
@@ -133,7 +133,7 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 
 							if isCanAdd || len(minigameMap.Versions) == 0 {
 								minigameMap.Versions = append(minigameMap.Versions, version)
-								minigamesList[minigameIndex].Format[formatIndex].Map[mapIndex] = minigameMap
+								minigamesList[minigameIndex].Formats[formatIndex].Maps[mapIndex] = minigameMap
 							}
 							break
 						}
@@ -160,6 +160,11 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 		return
 	}
 
+	if len(contents) == 0 {
+		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3EmptyMiniGameMapsList)
+		return
+	}
+
 	var formatsList []models.Format
 	for _, key := range contents {
 		foldersList := *key.Key
@@ -181,7 +186,7 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 				if isCanAdd || len(formatsList) == 0 {
 					formatsList = append(formatsList, models.Format{
 						Format: formatName,
-						Map:    nil,
+						Maps:   nil,
 					})
 				}
 			} else if index == 2 {
@@ -194,7 +199,7 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 					}
 
 					var isCanAdd bool
-					for _, minigameMap := range format.Map {
+					for _, minigameMap := range format.Maps {
 						if minigameMap.Name == mapName {
 							continue
 						}
@@ -202,8 +207,8 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 						break
 					}
 
-					if isCanAdd || len(format.Map) == 0 {
-						format.Map = append(format.Map, models.Map{
+					if isCanAdd || len(format.Maps) == 0 {
+						format.Maps = append(format.Maps, models.Map{
 							Name:     mapName,
 							Versions: nil,
 						})
@@ -221,7 +226,7 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 						continue
 					}
 
-					for mapIndex, minigameMap := range format.Map {
+					for mapIndex, minigameMap := range format.Maps {
 						if minigameMap.Name != mapName {
 							continue
 						}
@@ -237,7 +242,7 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 
 						if isCanAdd || len(minigameMap.Versions) == 0 {
 							minigameMap.Versions = append(minigameMap.Versions, version)
-							formatsList[formatIndex].Map[mapIndex].Versions = minigameMap.Versions
+							formatsList[formatIndex].Maps[mapIndex].Versions = minigameMap.Versions
 						}
 						break
 					}
@@ -249,6 +254,79 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.MiniGameMapsResponse{
 		Success: true,
-		Format:  formatsList,
+		Formats: formatsList,
+	})
+}
+
+func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
+	minigame := c.Param("minigame")
+	format := c.Param("format")
+
+	contents, err := h.services.GetMiniGameFormatMapsList(minigame, format)
+	if err != nil {
+		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMiniGameFormatMapsList)
+		return
+	}
+
+	if len(contents) == 0 {
+		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3EmptyMiniGameFormatMapsList)
+		return
+	}
+
+	var mapsList []models.Map
+	for _, key := range contents {
+		foldersList := *key.Key
+
+		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
+		for index, folder := range folders {
+			if index == 2 {
+				mapName := folder
+
+				var isCanAdd bool
+				for _, minigameMap := range mapsList {
+					if minigameMap.Name == mapName {
+						continue
+					}
+					isCanAdd = true
+					break
+				}
+
+				if isCanAdd || len(mapsList) == 0 {
+					mapsList = append(mapsList, models.Map{
+						Name:     mapName,
+						Versions: nil,
+					})
+				}
+			} else if index == 3 {
+				mapName := folders[2]
+				version := folder
+
+				for mapIndex, minigameMap := range mapsList {
+					if minigameMap.Name != mapName {
+						continue
+					}
+
+					var isCanAdd bool
+					for _, ver := range minigameMap.Versions {
+						if ver == version {
+							continue
+						}
+						isCanAdd = true
+						break
+					}
+
+					if isCanAdd || len(minigameMap.Versions) == 0 {
+						minigameMap.Versions = append(minigameMap.Versions, version)
+						mapsList[mapIndex].Versions = minigameMap.Versions
+					}
+					break
+				}
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, models.MiniGameFormatMapsResponse{
+		Success: true,
+		Maps:    mapsList,
 	})
 }

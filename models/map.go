@@ -1,13 +1,13 @@
 package models
 
 type MiniGames struct {
-	Name   string   `json:"name"`
-	Format []Format `json:"formats"`
+	Name    string   `json:"name"`
+	Formats []Format `json:"formats"`
 }
 
 type Format struct {
 	Format string `json:"format"`
-	Map    []Map  `json:"maps"`
+	Maps   []Map  `json:"maps"`
 }
 
 type Map struct {
@@ -22,5 +22,10 @@ type MapsResponse struct {
 
 type MiniGameMapsResponse struct {
 	Success bool     `json:"success"`
-	Format  []Format `json:"format"`
+	Formats []Format `json:"formats"`
+}
+
+type MiniGameFormatMapsResponse struct {
+	Success bool  `json:"success"`
+	Maps    []Map `json:"maps"`
 }
