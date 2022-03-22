@@ -67,6 +67,7 @@ type S3 interface {
 	GetPluginsList() ([]*s3.Object, error)
 	GetPluginVersionsList(plugin string) ([]*s3.Object, error)
 	DownloadPluginJar(plugin, version string) (*string, *string, error)
+	DownloadPluginConfig(plugin, version string) (*string, *string, error)
 }
 
 type Service struct {

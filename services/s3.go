@@ -10,13 +10,15 @@ import (
 )
 
 var (
-	worldFileName  = "world.rar"
-	configFileName = "map.yml"
-	pluginFileName = "plugin.jar"
+	mapWorldFileName     = "world.rar"
+	mapConfigFileName    = "map.yml"
+	pluginJarFileName    = "plugin.jar"
+	pluginConfigFileName = "config.yml"
 
-	worldFilePath  = "files/" + worldFileName
-	configFilePath = "files/" + configFileName
-	pluginFilePath = "files/" + pluginFileName
+	mapWorldFilePath     = "files/" + mapWorldFileName
+	mapConfigFilePath    = "files/" + mapConfigFileName
+	pluginJarFilePath    = "files/" + pluginJarFileName
+	pluginConfigFilePath = "files/" + pluginConfigFileName
 )
 
 type S3Service struct {
@@ -131,14 +133,14 @@ func (s *S3Service) CreateMap(minigame, format, mapName, version string, worldFi
 		{
 			Object: &s3manager.UploadInput{
 				Bucket: s.config.MapsBucket,
-				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + worldFileName),
+				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapWorldFileName),
 				Body:   worldFile,
 			},
 		},
 		{
 			Object: &s3manager.UploadInput{
 				Bucket: s.config.MapsBucket,
-				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + configFileName),
+				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapConfigFileName),
 				Body:   configFile,
 			},
 		},
@@ -153,7 +155,7 @@ func (s *S3Service) CreateMap(minigame, format, mapName, version string, worldFi
 }
 
 func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) (*string, *string, error) {
-	worldFile, err := os.Create(worldFilePath)
+	worldFile, err := os.Create(mapWorldFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -162,17 +164,17 @@ func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) 
 	// world
 	_, err = s.config.MapsDownloader.Download(worldFile, &s3.GetObjectInput{
 		Bucket: s.config.MapsBucket,
-		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + worldFileName),
+		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapWorldFileName),
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return &worldFilePath, &worldFileName, err
+	return &mapWorldFilePath, &mapWorldFileName, err
 }
 
 func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string) (*string, *string, error) {
-	mapFile, err := os.Create(configFilePath)
+	mapFile, err := os.Create(mapConfigFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -181,13 +183,13 @@ func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string)
 	// map
 	_, err = s.config.MapsDownloader.Download(mapFile, &s3.GetObjectInput{
 		Bucket: s.config.MapsBucket,
-		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + configFileName),
+		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapConfigFileName),
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return &configFilePath, &configFileName, err
+	return &mapConfigFilePath, &mapConfigFileName, err
 }
 
 func (s *S3Service) GetPluginsList() ([]*s3.Object, error) {
@@ -214,7 +216,7 @@ func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
 }
 
 func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string, error) {
-	jarFile, err := os.Create(pluginFilePath)
+	jarFile, err := os.Create(pluginJarFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -223,11 +225,30 @@ func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string,
 	// world
 	_, err = s.config.PluginsDownloader.Download(jarFile, &s3.GetObjectInput{
 		Bucket: s.config.PluginsBucket,
-		Key:    aws.String(plugin + "/" + version + "/" + pluginFileName),
+		Key:    aws.String(plugin + "/" + version + "/" + pluginJarFileName),
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return &pluginFilePath, &plugin, err
+	return &pluginJarFilePath, &plugin, err
+}
+
+func (s *S3Service) DownloadPluginConfig(plugin, version string) (*string, *string, error) {
+	configFile, err := os.Create(pluginConfigFilePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer configFile.Close()
+
+	// world
+	_, err = s.config.PluginsDownloader.Download(configFile, &s3.GetObjectInput{
+		Bucket: s.config.PluginsBucket,
+		Key:    aws.String(plugin + "/" + version + "/" + pluginConfigFileName),
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &pluginConfigFilePath, &pluginConfigFileName, err
 }

@@ -17,3 +17,16 @@ func (h *Handler) PluginJarGetHandler(c *gin.Context) {
 
 	c.FileAttachment(*filePath, *fileName+".jar")
 }
+
+func (h *Handler) PluginConfigGetHandler(c *gin.Context) {
+	plugin := c.Param("name")
+	version := c.Param("version")
+
+	filePath, fileName, err := h.services.DownloadPluginConfig(plugin, version)
+	if err != nil {
+		h.services.HandleInternalErr(c, errors.ErrS3DownloadingPluginConfig, err)
+		return
+	}
+
+	c.FileAttachment(*filePath, *fileName)
+}

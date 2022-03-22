@@ -126,4 +126,5 @@ var (
 	ErrS3GettingPluginVersionsList = errors.New("error getting plugin versions list from s3 plugins bucket")
 	ErrS3EmptyPluginVersionsList   = errors.New("empty list of plugin versions in s3 plugins bucket")
 	ErrS3DownloadingPluginJar      = errors.New("error downloading plugin jar from s3 plugins bucket")
+	ErrS3DownloadingPluginConfig   = errors.New("error downloading plugin config from s3 plugins bucket")
 )
