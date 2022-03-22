@@ -12,9 +12,11 @@ import (
 var (
 	worldFileName  = "world.rar"
 	configFileName = "map.yml"
+	pluginFileName = "plugin.jar"
 
 	worldFilePath  = "files/" + worldFileName
 	configFilePath = "files/" + configFileName
+	pluginFilePath = "files/" + pluginFileName
 )
 
 type S3Service struct {
@@ -209,4 +211,23 @@ func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
 	}
 
 	return resp.Contents, nil
+}
+
+func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string, error) {
+	jarFile, err := os.Create(pluginFilePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer jarFile.Close()
+
+	// world
+	_, err = s.config.PluginsDownloader.Download(jarFile, &s3.GetObjectInput{
+		Bucket: s.config.PluginsBucket,
+		Key:    aws.String(plugin + "/" + version + "/" + pluginFileName),
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &pluginFilePath, &plugin, err
 }

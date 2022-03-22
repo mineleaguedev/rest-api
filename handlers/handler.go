@@ -97,7 +97,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		pluginsGroup.GET("/plugin", h.plugins.PluginsGetHandler)
 		pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler)
-		//pluginsGroup.GET("/plugin/:name/jar", h.plugins.PluginJarGetHandler)
+		pluginsGroup.GET("/plugin/:name/:version/jar", h.plugins.PluginJarGetHandler)
 		//pluginsGroup.GET("/plugin/:name/config", h.plugins.PluginConfigGetHandler)
 		//
 		//pluginsGroup.POST("/map", h.plugins.PluginAddHandler)
