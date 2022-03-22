@@ -8,6 +8,7 @@ import (
 	"github.com/mineleaguedev/rest-api/handlers/cabinet"
 	"github.com/mineleaguedev/rest-api/handlers/maps"
 	"github.com/mineleaguedev/rest-api/handlers/minigames"
+	"github.com/mineleaguedev/rest-api/handlers/plugins"
 	"github.com/mineleaguedev/rest-api/models"
 	"github.com/mineleaguedev/rest-api/services"
 )
@@ -17,6 +18,7 @@ type Handler struct {
 	auth      *auth.Handler
 	minigames *minigames.Handler
 	maps      *maps.Handler
+	plugins   *plugins.Handler
 	services  *services.Service
 }
 
@@ -26,6 +28,7 @@ func NewHandler(services *services.Service, middleware models.JWTMiddleware, gen
 		auth:      auth.NewHandler(services, middleware, generalDB),
 		minigames: minigames.NewHandler(services, minigamesDB),
 		maps:      maps.NewHandler(services),
+		plugins:   plugins.NewHandler(services),
 		services:  services,
 	}
 }
@@ -87,7 +90,17 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		mapsGroup.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler)
 		mapsGroup.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler)
 
-		mapsGroup.POST("/map", h.maps.CreateMapHandler)
+		mapsGroup.POST("/map", h.maps.MapAddHandler)
+	}
+
+	pluginsGroup := router.Group("/")
+	{
+		pluginsGroup.GET("/plugin", h.plugins.PluginsGetHandler)
+		//pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler)
+		//pluginsGroup.GET("/plugin/:name/jar", h.plugins.PluginJarGetHandler)
+		//pluginsGroup.GET("/plugin/:name/config", h.plugins.PluginConfigGetHandler)
+		//
+		//pluginsGroup.POST("/map", h.plugins.PluginAddHandler)
 	}
 
 	return router

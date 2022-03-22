@@ -14,6 +14,13 @@ import (
 	"unicode"
 )
 
+type registerRequest struct {
+	Username string `form:"username" binding:"required"`
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
+}
+
 func validUsername(username string) bool {
 	matched, err := regexp.MatchString("^[a-zA-Z0-9_]{3,20}$", username)
 	if err != nil {
@@ -47,7 +54,7 @@ func generateToken(length int) string {
 }
 
 func (h *Handler) RegHandler(c *gin.Context) {
-	var input models.RegisterRequest
+	var input registerRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingRegValues)

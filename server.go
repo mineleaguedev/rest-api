@@ -165,6 +165,22 @@ func main() {
 	mapsDownloader := s3manager.NewDownloader(sess)
 	mapsManager := s3.New(sess)
 
+	// setup plugins
+	sess, err = session.NewSession(&aws.Config{
+		Region: awsRegion,
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("aws.s3.plugins.access.key.id"),
+			os.Getenv("aws.s3.plugins.secret.access.key"),
+			"",
+		),
+	})
+	if err != nil {
+		log.Fatalf("Error connecting to plugins s3: %s", err)
+	}
+	pluginsUploader := s3manager.NewUploader(sess)
+	pluginsDownloader := s3manager.NewDownloader(sess)
+	pluginsManager := s3.New(sess)
+
 	service := services.NewService(
 		middleware,
 		models.RedisConfig{
@@ -197,16 +213,20 @@ func main() {
 			ChangeCloakForm: template.Must(template.ParseFiles("./forms/change_cloak_form.html")),
 			DeleteCloakForm: template.Must(template.ParseFiles("./forms/delete_cloak_form.html")),
 		}, models.S3Config{
-			SkinsBucket:    aws.String(os.Getenv("aws.s3.skins.bucket.name")),
-			SkinsUploader:  skinsUploader,
-			SkinsManager:   skinsManager,
-			CloaksBucket:   aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
-			CloaksUploader: cloaksUploader,
-			CloaksManager:  cloaksManager,
-			MapsBucket:     aws.String(os.Getenv("aws.s3.maps.bucket.name")),
-			MapsUploader:   mapsUploader,
-			MapsDownloader: mapsDownloader,
-			MapsManager:    mapsManager,
+			SkinsBucket:       aws.String(os.Getenv("aws.s3.skins.bucket.name")),
+			SkinsUploader:     skinsUploader,
+			SkinsManager:      skinsManager,
+			CloaksBucket:      aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
+			CloaksUploader:    cloaksUploader,
+			CloaksManager:     cloaksManager,
+			MapsBucket:        aws.String(os.Getenv("aws.s3.maps.bucket.name")),
+			MapsUploader:      mapsUploader,
+			MapsDownloader:    mapsDownloader,
+			MapsManager:       mapsManager,
+			PluginsBucket:     aws.String(os.Getenv("aws.s3.plugins.bucket.name")),
+			PluginsUploader:   pluginsUploader,
+			PluginsDownloader: pluginsDownloader,
+			PluginsManager:    pluginsManager,
 		})
 	handler := handlers.NewHandler(service, middleware, generalDB, minigamesDB)
 

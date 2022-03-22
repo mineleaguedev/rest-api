@@ -17,7 +17,7 @@ type MapCreateRequest struct {
 	Version  string `form:"version" binding:"required"`
 }
 
-func (h *Handler) CreateMapHandler(c *gin.Context) {
+func (h *Handler) MapAddHandler(c *gin.Context) {
 	var input MapCreateRequest
 
 	if err := c.ShouldBind(&input); err != nil {

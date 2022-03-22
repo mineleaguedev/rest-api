@@ -10,8 +10,20 @@ import (
 	"time"
 )
 
+type playerBanRequest struct {
+	Username string  `json:"username" binding:"required"`
+	Minutes  *int64  `json:"minutes"`
+	Reason   *string `json:"reason"`
+	Admin    string  `json:"admin" binding:"required"`
+}
+
+type playerUnbanRequest struct {
+	Username string `json:"username" binding:"required"`
+	Admin    string `json:"admin" binding:"required"`
+}
+
 func (h *Handler) PlayerBanHandler(c *gin.Context) {
-	var input models.PlayerBanRequest
+	var input playerBanRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerBanValues)
@@ -51,7 +63,7 @@ func (h *Handler) PlayerBanHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerUnbanHandler(c *gin.Context) {
-	var input models.PlayerUnbanRequest
+	var input playerUnbanRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUnbanValues)

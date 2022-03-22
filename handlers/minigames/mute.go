@@ -10,8 +10,20 @@ import (
 	"time"
 )
 
+type playerMuteRequest struct {
+	Username string  `json:"username" binding:"required"`
+	Minutes  *int64  `json:"minutes"`
+	Reason   *string `json:"reason"`
+	Admin    string  `json:"admin" binding:"required"`
+}
+
+type playerUnmuteRequest struct {
+	Username string `json:"username" binding:"required"`
+	Admin    string `json:"admin" binding:"required"`
+}
+
 func (h *Handler) PlayerMuteHandler(c *gin.Context) {
-	var input models.PlayerMuteRequest
+	var input playerMuteRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerMuteValues)
@@ -51,7 +63,7 @@ func (h *Handler) PlayerMuteHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerUnmuteHandler(c *gin.Context) {
-	var input models.PlayerUnmuteRequest
+	var input playerUnmuteRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUnmuteValues)

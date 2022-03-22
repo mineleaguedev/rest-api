@@ -47,14 +47,18 @@ type CaptchaConfig struct {
 }
 
 type S3Config struct {
-	SkinsBucket    *string
-	SkinsUploader  *s3manager.Uploader
-	SkinsManager   *s3.S3
-	CloaksBucket   *string
-	CloaksUploader *s3manager.Uploader
-	CloaksManager  *s3.S3
-	MapsBucket     *string
-	MapsUploader   *s3manager.Uploader
-	MapsDownloader *s3manager.Downloader
-	MapsManager    *s3.S3
+	SkinsBucket       *string
+	SkinsUploader     *s3manager.Uploader
+	SkinsManager      *s3.S3
+	CloaksBucket      *string
+	CloaksUploader    *s3manager.Uploader
+	CloaksManager     *s3.S3
+	MapsBucket        *string
+	MapsUploader      *s3manager.Uploader
+	MapsDownloader    *s3manager.Downloader
+	MapsManager       *s3.S3
+	PluginsBucket     *string
+	PluginsUploader   *s3manager.Uploader
+	PluginsDownloader *s3manager.Downloader
+	PluginsManager    *s3.S3
 }

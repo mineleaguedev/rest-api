@@ -121,4 +121,6 @@ var (
 	ErrS3CreatingMap                          = errors.New("error creating map in s3 maps bucket")
 	ErrS3DownloadingMapWorld                  = errors.New("error downloading map world from s3 maps bucket")
 	ErrS3DownloadingMapConfig                 = errors.New("error downloading map config from s3 maps bucket")
+
+	ErrS3GettingPluginsList = errors.New("error getting plugins list from s3 maps bucket")
 )

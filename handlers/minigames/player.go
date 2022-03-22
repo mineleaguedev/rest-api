@@ -11,8 +11,38 @@ import (
 	"time"
 )
 
+type playerCreateRequest struct {
+	Username string `json:"username" binding:"required,max=20"`
+}
+
+type playerUpdateExpRequest struct {
+	Username string `json:"username" binding:"required"`
+	Exp      int64  `json:"exp" binding:"required"`
+}
+
+type playerUpdateRankRequest struct {
+	Username string  `json:"username" binding:"required"`
+	Rank     *string `json:"rank"`
+	RankTo   *int64  `json:"rankTo"`
+}
+
+type playerUpdateCoinsRequest struct {
+	Username string `json:"username" binding:"required"`
+	Coins    int64  `json:"coins" binding:"required"`
+}
+
+type playerUpdatePlaytimeRequest struct {
+	Username string `json:"username" binding:"required"`
+	Playtime int64  `json:"playtime" binding:"required"`
+}
+
+type playerUpdateLastSeenRequest struct {
+	Username string `json:"username" binding:"required"`
+	LastSeen int64  `json:"lastSeen" binding:"required"`
+}
+
 func (h *Handler) PlayerCreateHandler(c *gin.Context) {
-	var input models.PlayerCreateRequest
+	var input playerCreateRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerCreateValues)
@@ -101,7 +131,7 @@ func (h *Handler) PlayerGetHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerExpUpdateHandler(c *gin.Context) {
-	var input models.PlayerUpdateExpRequest
+	var input playerUpdateExpRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUpdateExpValues)
@@ -118,7 +148,7 @@ func (h *Handler) PlayerExpUpdateHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerRankUpdateHandler(c *gin.Context) {
-	var input models.PlayerUpdateRankRequest
+	var input playerUpdateRankRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUpdateRankValues)
@@ -151,7 +181,7 @@ func (h *Handler) PlayerRankUpdateHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerCoinsUpdateHandler(c *gin.Context) {
-	var input models.PlayerUpdateCoinsRequest
+	var input playerUpdateCoinsRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUpdateCoinsValues)
@@ -168,7 +198,7 @@ func (h *Handler) PlayerCoinsUpdateHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerPlaytimeUpdateHandler(c *gin.Context) {
-	var input models.PlayerUpdatePlaytimeRequest
+	var input playerUpdatePlaytimeRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUpdatePlaytimeValues)
@@ -185,7 +215,7 @@ func (h *Handler) PlayerPlaytimeUpdateHandler(c *gin.Context) {
 }
 
 func (h *Handler) PlayerLastSeenUpdateHandler(c *gin.Context) {
-	var input models.PlayerUpdateLastSeenRequest
+	var input playerUpdateLastSeenRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPlayerUpdateLastSeenValues)

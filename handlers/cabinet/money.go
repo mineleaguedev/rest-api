@@ -9,8 +9,14 @@ import (
 	"net/http"
 )
 
+type moneyTransferRequest struct {
+	Username string `form:"username" binding:"required"`
+	Amount   int64  `form:"amount" binding:"required"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
+}
+
 func (h *Handler) MoneyTransferHandler(c *gin.Context) {
-	var input models.MoneyTransferRequest
+	var input moneyTransferRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingTransferMoneyValues)

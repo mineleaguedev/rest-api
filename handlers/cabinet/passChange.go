@@ -11,6 +11,12 @@ import (
 	"unicode"
 )
 
+type passChangeRequest struct {
+	OldPassword string `form:"old-password" binding:"required"`
+	NewPassword string `form:"new-password" binding:"required"`
+	Captcha     string `form:"h-captcha-response" binding:"required"`
+}
+
 func validPassword(password string) (sevenOrMore, number bool) {
 	letters := 0
 	for _, c := range password {
@@ -28,7 +34,7 @@ func validPassword(password string) (sevenOrMore, number bool) {
 }
 
 func (h *Handler) PassChangeHandler(c *gin.Context) {
-	var input models.PassChangeRequest
+	var input passChangeRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingChangePassValues)

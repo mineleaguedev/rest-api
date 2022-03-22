@@ -6,12 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mineleaguedev/rest-api/errors"
-	"github.com/mineleaguedev/rest-api/models"
 	"net/http"
 )
 
+type authRequest struct {
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
+}
+
 func (h *Handler) AuthHandler(c *gin.Context) {
-	var input models.AuthRequest
+	var input authRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingAuthValues)

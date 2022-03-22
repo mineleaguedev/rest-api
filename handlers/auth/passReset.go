@@ -19,8 +19,14 @@ const (
 	allCharSet   = lowerCharSet + upperCharSet + numberSet
 )
 
+type passResetRequest struct {
+	Username string `form:"username" binding:"required"`
+	Email    string `form:"email" binding:"required,email"`
+	Captcha  string `form:"h-captcha-response" binding:"required"`
+}
+
 func (h *Handler) PassResetHandler(c *gin.Context) {
-	var input models.PassResetRequest
+	var input passResetRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPassResetValues)

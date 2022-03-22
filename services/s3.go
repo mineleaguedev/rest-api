@@ -187,3 +187,14 @@ func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string)
 
 	return &configFilePath, &configFileName, err
 }
+
+func (s *S3Service) GetPluginsList() ([]*s3.Object, error) {
+	resp, err := s.config.PluginsManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.PluginsBucket,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contents, nil
+}
