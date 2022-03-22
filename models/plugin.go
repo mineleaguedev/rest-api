@@ -9,3 +9,8 @@ type PluginsResponse struct {
 	Success bool     `json:"success"`
 	Plugins []Plugin `json:"plugins"`
 }
+
+type PluginResponse struct {
+	Success  bool     `json:"success"`
+	Versions []string `json:"versions"`
+}

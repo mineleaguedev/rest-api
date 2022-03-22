@@ -198,3 +198,15 @@ func (s *S3Service) GetPluginsList() ([]*s3.Object, error) {
 
 	return resp.Contents, nil
 }
+
+func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
+	resp, err := s.config.PluginsManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.PluginsBucket,
+		Prefix: aws.String(plugin + "/"),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contents, nil
+}
