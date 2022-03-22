@@ -24,12 +24,12 @@ func (h *Handler) PluginsGetHandler(c *gin.Context) {
 			if index == 0 {
 				pluginName := folder
 
-				var isCanAdd bool
+				var isCanAdd = true
 				for _, plugin := range pluginsList {
-					if plugin.Name == pluginName {
+					if plugin.Name != pluginName {
 						continue
 					}
-					isCanAdd = true
+					isCanAdd = false
 					break
 				}
 
@@ -43,17 +43,17 @@ func (h *Handler) PluginsGetHandler(c *gin.Context) {
 				pluginName := folders[0]
 				version := folder
 
-				var isCanAdd bool
 				for pluginIndex, plugin := range pluginsList {
 					if plugin.Name != pluginName {
 						continue
 					}
 
+					var isCanAdd = true
 					for _, ver := range plugin.Versions {
-						if ver == version {
+						if ver != version {
 							continue
 						}
-						isCanAdd = true
+						isCanAdd = false
 						break
 					}
 

@@ -32,12 +32,12 @@ func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
 			if index == 2 {
 				mapName := folder
 
-				var isCanAdd bool
+				var isCanAdd = true
 				for _, minigameMap := range mapsList {
-					if minigameMap.Name == mapName {
+					if minigameMap.Name != mapName {
 						continue
 					}
-					isCanAdd = true
+					isCanAdd = false
 					break
 				}
 
@@ -56,12 +56,12 @@ func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
 						continue
 					}
 
-					var isCanAdd bool
+					var isCanAdd = true
 					for _, ver := range minigameMap.Versions {
-						if ver == version {
+						if ver != version {
 							continue
 						}
-						isCanAdd = true
+						isCanAdd = false
 						break
 					}
 

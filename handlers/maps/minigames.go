@@ -31,12 +31,12 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 			if index == 1 {
 				formatName := folder
 
-				var isCanAdd bool
+				var isCanAdd = true
 				for _, format := range formatsList {
-					if format.Format == formatName {
+					if format.Format != formatName {
 						continue
 					}
-					isCanAdd = true
+					isCanAdd = false
 					break
 				}
 
@@ -55,12 +55,12 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 						continue
 					}
 
-					var isCanAdd bool
+					var isCanAdd = true
 					for _, minigameMap := range format.Maps {
-						if minigameMap.Name == mapName {
+						if minigameMap.Name != mapName {
 							continue
 						}
-						isCanAdd = true
+						isCanAdd = false
 						break
 					}
 
@@ -88,12 +88,12 @@ func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
 							continue
 						}
 
-						var isCanAdd bool
+						var isCanAdd = true
 						for _, ver := range minigameMap.Versions {
-							if ver == version {
+							if ver != version {
 								continue
 							}
-							isCanAdd = true
+							isCanAdd = false
 							break
 						}
 

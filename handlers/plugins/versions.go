@@ -31,17 +31,18 @@ func (h *Handler) PluginVersionsGetHandler(c *gin.Context) {
 			if index == 1 {
 				version := folder
 
-				var isCanAdd bool
+				var isCanAdd = true
 				for _, ver := range versionsList {
-					if ver == version {
+					if ver != version {
 						continue
 					}
-					isCanAdd = true
+					isCanAdd = false
 					break
 				}
 
 				if isCanAdd || len(versionsList) == 0 {
 					versionsList = append(versionsList, version)
+					isCanAdd = false
 				}
 			}
 		}

@@ -33,12 +33,12 @@ func (h *Handler) MapVersionsGetHandler(c *gin.Context) {
 			if index == 3 {
 				version := folder
 
-				var isCanAdd bool
+				var isCanAdd = true
 				for _, ver := range versionsList {
-					if ver == version {
+					if ver != version {
 						continue
 					}
-					isCanAdd = true
+					isCanAdd = false
 					break
 				}
 

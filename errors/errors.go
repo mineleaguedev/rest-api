@@ -106,10 +106,13 @@ var (
 	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info into minigames database")
 	ErrMiniGamesDBUnmutingPlayer        = errors.New("error updating player mute status in minigames database")
 
-	ErrMissingMapCreateValues = errors.New("missing map create values")
+	ErrMissingMapUploadValues    = errors.New("missing map upload values")
+	ErrMissingPluginUploadValues = errors.New("missing plugin upload values")
 
-	ErrInvalidMapWorldFile  = errors.New("invalid map world file")
-	ErrInvalidMapConfigFile = errors.New("invalid map config file")
+	ErrInvalidMapWorldFile     = errors.New("invalid map world file")
+	ErrInvalidMapConfigFile    = errors.New("invalid map config file")
+	ErrInvalidPluginJarFile    = errors.New("invalid plugin jar file")
+	ErrInvalidPluginConfigFile = errors.New("invalid plugin config file")
 
 	ErrS3GettingMapsList                      = errors.New("error getting maps list from s3 maps bucket")
 	ErrS3GettingMiniGameMapsList              = errors.New("error getting minigame maps list from s3 maps bucket")
@@ -118,13 +121,14 @@ var (
 	ErrS3EmptyMiniGameFormatMapsList          = errors.New("empty list of minigame format maps in s3 maps bucket")
 	ErrS3GettingMiniGameFormatMapVersionsList = errors.New("error getting minigame format map versions list from s3 maps bucket")
 	ErrS3EmptyMiniGameFormatMapVersionsList   = errors.New("empty list of minigame format map versions in s3 maps bucket")
-	ErrS3CreatingMap                          = errors.New("error creating map in s3 maps bucket")
+	ErrS3UploadingMap                         = errors.New("error uploading map into s3 maps bucket")
 	ErrS3DownloadingMapWorld                  = errors.New("error downloading map world from s3 maps bucket")
 	ErrS3DownloadingMapConfig                 = errors.New("error downloading map config from s3 maps bucket")
 
 	ErrS3GettingPluginsList        = errors.New("error getting plugins list from s3 plugins bucket")
 	ErrS3GettingPluginVersionsList = errors.New("error getting plugin versions list from s3 plugins bucket")
 	ErrS3EmptyPluginVersionsList   = errors.New("empty list of plugin versions in s3 plugins bucket")
+	ErrS3UploadingPlugin           = errors.New("error uploading plugin into s3 plugins bucket")
 	ErrS3DownloadingPluginJar      = errors.New("error downloading plugin jar from s3 plugins bucket")
 	ErrS3DownloadingPluginConfig   = errors.New("error downloading plugin config from s3 plugins bucket")
 )

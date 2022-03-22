@@ -90,7 +90,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		mapsGroup.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler)
 		mapsGroup.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler)
 
-		mapsGroup.POST("/map", h.maps.MapAddHandler)
+		mapsGroup.POST("/map", h.maps.MapUploadHandler)
 	}
 
 	pluginsGroup := router.Group("/")
@@ -99,8 +99,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler)
 		pluginsGroup.GET("/plugin/:name/:version/jar", h.plugins.PluginJarGetHandler)
 		pluginsGroup.GET("/plugin/:name/:version/config", h.plugins.PluginConfigGetHandler)
-		//
-		//pluginsGroup.POST("/map", h.plugins.PluginAddHandler)
+
+		pluginsGroup.POST("/plugin", h.plugins.PluginUploadHandler)
 	}
 
 	return router

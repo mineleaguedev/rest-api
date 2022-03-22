@@ -128,7 +128,7 @@ func (s *S3Service) GetMiniGameFormatMapVersionsList(minigame, format, mapName s
 	return resp.Contents, nil
 }
 
-func (s *S3Service) CreateMap(minigame, format, mapName, version string, worldFile, configFile multipart.File) error {
+func (s *S3Service) UploadMap(minigame, format, mapName, version string, worldFile, configFile multipart.File) error {
 	objects := []s3manager.BatchUploadObject{
 		{
 			Object: &s3manager.UploadInput{
@@ -213,6 +213,32 @@ func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
 	}
 
 	return resp.Contents, nil
+}
+
+func (s *S3Service) UploadPlugin(plugin, version string, jarFile, configFile multipart.File) error {
+	objects := []s3manager.BatchUploadObject{
+		{
+			Object: &s3manager.UploadInput{
+				Bucket: s.config.PluginsBucket,
+				Key:    aws.String(plugin + "/" + version + "/" + pluginJarFileName),
+				Body:   jarFile,
+			},
+		},
+		{
+			Object: &s3manager.UploadInput{
+				Bucket: s.config.PluginsBucket,
+				Key:    aws.String(plugin + "/" + version + "/" + pluginConfigFileName),
+				Body:   configFile,
+			},
+		},
+	}
+
+	iter := &s3manager.UploadObjectsIterator{Objects: objects}
+	if err := s.config.PluginsUploader.UploadWithIterator(aws.BackgroundContext(), iter); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string, error) {

@@ -8,20 +8,20 @@ import (
 	"net/http"
 )
 
-const MaxUploadSize = 200 << 20 // 2 mb
+const MaxUploadSize = 200 << 20 // 200 mb
 
-type MapCreateRequest struct {
+type mapCreateRequest struct {
 	MiniGame string `form:"minigame" binding:"required"`
 	Format   string `form:"format" binding:"required"`
 	Map      string `form:"map" binding:"required"`
 	Version  string `form:"version" binding:"required"`
 }
 
-func (h *Handler) MapAddHandler(c *gin.Context) {
-	var input MapCreateRequest
+func (h *Handler) MapUploadHandler(c *gin.Context) {
+	var input mapCreateRequest
 
 	if err := c.ShouldBind(&input); err != nil {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapCreateValues)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapUploadValues)
 		return
 	}
 
@@ -31,7 +31,7 @@ func (h *Handler) MapAddHandler(c *gin.Context) {
 	// world file
 	worldFile, worldFileHeader, err := c.Request.FormFile("worldFile")
 	if err != nil {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapCreateValues)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapUploadValues)
 		return
 	}
 
@@ -62,7 +62,7 @@ func (h *Handler) MapAddHandler(c *gin.Context) {
 	// config file
 	configFile, configFileHeader, err := c.Request.FormFile("configFile")
 	if err != nil {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapCreateValues)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapUploadValues)
 		return
 	}
 
@@ -90,8 +90,8 @@ func (h *Handler) MapAddHandler(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.CreateMap(input.MiniGame, input.Format, input.Map, input.Version, worldFile, configFile); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrS3CreatingMap, err)
+	if err := h.services.UploadMap(input.MiniGame, input.Format, input.Map, input.Version, worldFile, configFile); err != nil {
+		h.services.HandleInternalErr(c, errors.ErrS3UploadingMap, err)
 		return
 	}
 
