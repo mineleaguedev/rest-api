@@ -105,5 +105,6 @@ var (
 	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info to minigames database")
 	ErrMiniGamesDBUnmutingPlayer        = errors.New("error updating player mute status in minigames database")
 
-	ErrS3GettingMapsList = errors.New("error getting maps list from s3 maps bucket")
+	ErrS3GettingMapsList         = errors.New("error getting maps list from s3 maps bucket")
+	ErrS3GettingMiniGameMapsList = errors.New("error getting minigame maps list from s3 maps bucket")
 )

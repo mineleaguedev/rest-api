@@ -150,3 +150,105 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 		MiniGames: minigamesList,
 	})
 }
+
+func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
+	minigame := c.Param("minigame")
+
+	contents, err := h.services.GetMiniGameMapsList(minigame)
+	if err != nil {
+		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMiniGameMapsList)
+		return
+	}
+
+	var formatsList []models.Format
+	for _, key := range contents {
+		foldersList := *key.Key
+
+		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
+		for index, folder := range folders {
+			if index == 1 {
+				formatName := folder
+
+				var isCanAdd bool
+				for _, format := range formatsList {
+					if format.Format == formatName {
+						continue
+					}
+					isCanAdd = true
+					break
+				}
+
+				if isCanAdd || len(formatsList) == 0 {
+					formatsList = append(formatsList, models.Format{
+						Format: formatName,
+						Map:    nil,
+					})
+				}
+			} else if index == 2 {
+				formatName := folders[1]
+				mapName := folder
+
+				for formatIndex, format := range formatsList {
+					if format.Format != formatName {
+						continue
+					}
+
+					var isCanAdd bool
+					for _, minigameMap := range format.Map {
+						if minigameMap.Name == mapName {
+							continue
+						}
+						isCanAdd = true
+						break
+					}
+
+					if isCanAdd || len(format.Map) == 0 {
+						format.Map = append(format.Map, models.Map{
+							Name:     mapName,
+							Versions: nil,
+						})
+						formatsList[formatIndex] = format
+					}
+					break
+				}
+			} else if index == 3 {
+				formatName := folders[1]
+				mapName := folders[2]
+				version := folder
+
+				for formatIndex, format := range formatsList {
+					if format.Format != formatName {
+						continue
+					}
+
+					for mapIndex, minigameMap := range format.Map {
+						if minigameMap.Name != mapName {
+							continue
+						}
+
+						var isCanAdd bool
+						for _, ver := range minigameMap.Versions {
+							if ver == version {
+								continue
+							}
+							isCanAdd = true
+							break
+						}
+
+						if isCanAdd || len(minigameMap.Versions) == 0 {
+							minigameMap.Versions = append(minigameMap.Versions, version)
+							formatsList[formatIndex].Map[mapIndex].Versions = minigameMap.Versions
+						}
+						break
+					}
+					break
+				}
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, models.MiniGameMapsResponse{
+		Success: true,
+		Format:  formatsList,
+	})
+}

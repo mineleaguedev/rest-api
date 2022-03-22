@@ -19,3 +19,8 @@ type MapsResponse struct {
 	Success   bool        `json:"success"`
 	MiniGames []MiniGames `json:"minigames"`
 }
+
+type MiniGameMapsResponse struct {
+	Success bool     `json:"success"`
+	Format  []Format `json:"format"`
+}

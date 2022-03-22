@@ -79,3 +79,16 @@ func (s *S3Service) GetMapsList() ([]*s3.Object, error) {
 
 	return resp.Contents, nil
 }
+
+func (s *S3Service) GetMiniGameMapsList(minigame string) ([]*s3.Object, error) {
+	params := &s3.ListObjectsV2Input{
+		Bucket: s.config.MapsBucket,
+		Prefix: aws.String(minigame),
+	}
+	resp, err := s.config.MapsDeleter.ListObjectsV2(params)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contents, nil
+}

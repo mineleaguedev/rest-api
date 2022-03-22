@@ -58,6 +58,7 @@ type S3 interface {
 	UploadCloak(username string, file multipart.File) error
 	DeleteCloak(username string) error
 	GetMapsList() ([]*s3.Object, error)
+	GetMiniGameMapsList(minigame string) ([]*s3.Object, error)
 }
 
 type Service struct {
