@@ -9,6 +9,14 @@ import (
 	"os"
 )
 
+var (
+	worldFileName  = "world.rar"
+	configFileName = "map.yml"
+
+	worldFilePath  = "files/" + worldFileName
+	configFilePath = "files/" + configFileName
+)
+
 type S3Service struct {
 	config models.S3Config
 }
@@ -116,10 +124,33 @@ func (s *S3Service) GetMiniGameFormatMapVersionsList(minigame, format, mapName s
 	return resp.Contents, nil
 }
 
-func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) (*string, *string, error) {
-	worldFileName := "world.rar"
+func (s *S3Service) CreateMap(minigame, format, mapName, version string, worldFile, configFile multipart.File) error {
+	objects := []s3manager.BatchUploadObject{
+		{
+			Object: &s3manager.UploadInput{
+				Bucket: s.config.MapsBucket,
+				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + worldFileName),
+				Body:   worldFile,
+			},
+		},
+		{
+			Object: &s3manager.UploadInput{
+				Bucket: s.config.MapsBucket,
+				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + configFileName),
+				Body:   configFile,
+			},
+		},
+	}
 
-	worldFilePath := "files/" + worldFileName
+	iter := &s3manager.UploadObjectsIterator{Objects: objects}
+	if err := s.config.MapsUploader.UploadWithIterator(aws.BackgroundContext(), iter); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) (*string, *string, error) {
 	worldFile, err := os.Create(worldFilePath)
 	if err != nil {
 		return nil, nil, err
@@ -139,10 +170,7 @@ func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) 
 }
 
 func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string) (*string, *string, error) {
-	mapFileName := "map.yml"
-
-	mapFilePath := "files/" + mapFileName
-	mapFile, err := os.Create(mapFilePath)
+	mapFile, err := os.Create(configFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -151,11 +179,11 @@ func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string)
 	// map
 	_, err = s.config.MapsDownloader.Download(mapFile, &s3.GetObjectInput{
 		Bucket: s.config.MapsBucket,
-		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapFileName),
+		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + configFileName),
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return &mapFilePath, &mapFileName, err
+	return &configFilePath, &configFileName, err
 }

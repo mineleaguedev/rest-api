@@ -4,377 +4,99 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mineleaguedev/rest-api/errors"
 	"github.com/mineleaguedev/rest-api/models"
+	"mime/multipart"
 	"net/http"
-	"strings"
 )
 
-func (h *Handler) MapsGetHandler(c *gin.Context) {
-	contents, err := h.services.GetMapsList()
-	if err != nil {
-		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMapsList)
-		return
-	}
+const MaxUploadSize = 200 << 20 // 2 mb
 
-	var minigamesList []models.MiniGames
-	for _, key := range contents {
-		foldersList := *key.Key
-
-		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
-		for index, folder := range folders {
-			if index == 0 {
-				minigameName := folder
-
-				var isCanAdd bool
-				for _, minigame := range minigamesList {
-					if minigame.Name == minigameName {
-						continue
-					}
-					isCanAdd = true
-					break
-				}
-
-				if isCanAdd || len(minigamesList) == 0 {
-					minigamesList = append(minigamesList, models.MiniGames{
-						Name:    minigameName,
-						Formats: nil,
-					})
-				}
-			} else if index == 1 {
-				minigameName := folders[0]
-				formatName := folder
-
-				var isCanAdd bool
-				for minigameIndex, minigame := range minigamesList {
-					if minigame.Name != minigameName {
-						continue
-					}
-
-					for _, format := range minigame.Formats {
-						if format.Format == formatName {
-							continue
-						}
-						isCanAdd = true
-						break
-					}
-
-					if isCanAdd || len(minigame.Formats) == 0 {
-						minigame.Formats = append(minigame.Formats, models.Format{
-							Format: formatName,
-							Maps:   nil,
-						})
-						minigamesList[minigameIndex] = minigame
-					}
-					break
-				}
-			} else if index == 2 {
-				minigameName := folders[0]
-				formatName := folders[1]
-				mapName := folder
-
-				for minigameIndex, minigame := range minigamesList {
-					if minigame.Name != minigameName {
-						continue
-					}
-
-					for formatIndex, format := range minigame.Formats {
-						if format.Format != formatName {
-							continue
-						}
-
-						var isCanAdd bool
-						for _, minigameMap := range format.Maps {
-							if minigameMap.Name == mapName {
-								continue
-							}
-							isCanAdd = true
-							break
-						}
-
-						if isCanAdd || len(format.Maps) == 0 {
-							format.Maps = append(format.Maps, models.Map{
-								Name:     mapName,
-								Versions: nil,
-							})
-							minigamesList[minigameIndex].Formats[formatIndex] = format
-						}
-						break
-					}
-					break
-				}
-			} else if index == 3 {
-				minigameName := folders[0]
-				formatName := folders[1]
-				mapName := folders[2]
-				version := folder
-
-				for minigameIndex, minigame := range minigamesList {
-					if minigame.Name != minigameName {
-						continue
-					}
-
-					for formatIndex, format := range minigame.Formats {
-						if format.Format != formatName {
-							continue
-						}
-
-						for mapIndex, minigameMap := range format.Maps {
-							if minigameMap.Name != mapName {
-								continue
-							}
-
-							var isCanAdd bool
-							for _, ver := range minigameMap.Versions {
-								if ver == version {
-									continue
-								}
-								isCanAdd = true
-								break
-							}
-
-							if isCanAdd || len(minigameMap.Versions) == 0 {
-								minigameMap.Versions = append(minigameMap.Versions, version)
-								minigamesList[minigameIndex].Formats[formatIndex].Maps[mapIndex] = minigameMap
-							}
-							break
-						}
-						break
-					}
-					break
-				}
-			}
-		}
-	}
-
-	c.JSON(http.StatusOK, models.MapsResponse{
-		Success:   true,
-		MiniGames: minigamesList,
-	})
+type MapCreateRequest struct {
+	MiniGame string `form:"minigame" binding:"required"`
+	Format   string `form:"format" binding:"required"`
+	Map      string `form:"map" binding:"required"`
+	Version  string `form:"version" binding:"required"`
 }
 
-func (h *Handler) MiniGameMapsGetHandler(c *gin.Context) {
-	minigame := c.Param("minigame")
+func (h *Handler) CreateMapHandler(c *gin.Context) {
+	var input MapCreateRequest
 
-	contents, err := h.services.GetMiniGameMapsList(minigame)
+	if err := c.ShouldBind(&input); err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapCreateValues)
+		return
+	}
+
+	// limit upload file size
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxUploadSize)
+
+	// world file
+	worldFile, worldFileHeader, err := c.Request.FormFile("worldFile")
 	if err != nil {
-		h.services.HandleInternalErr(c, errors.ErrS3GettingMiniGameMapsList, err)
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapCreateValues)
 		return
 	}
 
-	if len(contents) == 0 {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrS3EmptyMiniGameMapsList)
-		return
-	}
-
-	var formatsList []models.Format
-	for _, key := range contents {
-		foldersList := *key.Key
-
-		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
-		for index, folder := range folders {
-			if index == 1 {
-				formatName := folder
-
-				var isCanAdd bool
-				for _, format := range formatsList {
-					if format.Format == formatName {
-						continue
-					}
-					isCanAdd = true
-					break
-				}
-
-				if isCanAdd || len(formatsList) == 0 {
-					formatsList = append(formatsList, models.Format{
-						Format: formatName,
-						Maps:   nil,
-					})
-				}
-			} else if index == 2 {
-				formatName := folders[1]
-				mapName := folder
-
-				for formatIndex, format := range formatsList {
-					if format.Format != formatName {
-						continue
-					}
-
-					var isCanAdd bool
-					for _, minigameMap := range format.Maps {
-						if minigameMap.Name == mapName {
-							continue
-						}
-						isCanAdd = true
-						break
-					}
-
-					if isCanAdd || len(format.Maps) == 0 {
-						format.Maps = append(format.Maps, models.Map{
-							Name:     mapName,
-							Versions: nil,
-						})
-						formatsList[formatIndex] = format
-					}
-					break
-				}
-			} else if index == 3 {
-				formatName := folders[1]
-				mapName := folders[2]
-				version := folder
-
-				for formatIndex, format := range formatsList {
-					if format.Format != formatName {
-						continue
-					}
-
-					for mapIndex, minigameMap := range format.Maps {
-						if minigameMap.Name != mapName {
-							continue
-						}
-
-						var isCanAdd bool
-						for _, ver := range minigameMap.Versions {
-							if ver == version {
-								continue
-							}
-							isCanAdd = true
-							break
-						}
-
-						if isCanAdd || len(minigameMap.Versions) == 0 {
-							minigameMap.Versions = append(minigameMap.Versions, version)
-							formatsList[formatIndex].Maps[mapIndex].Versions = minigameMap.Versions
-						}
-						break
-					}
-					break
-				}
-			}
+	defer func(file multipart.File) {
+		if err := file.Close(); err != nil {
+			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapWorldFile)
+			return
 		}
+	}(worldFile)
+
+	worldFileBuffer := make([]byte, worldFileHeader.Size)
+	if _, err = worldFile.Read(worldFileBuffer); err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapWorldFile)
+		return
 	}
 
-	c.JSON(http.StatusOK, models.MiniGameMapsResponse{
+	worldFileType := http.DetectContentType(worldFileBuffer)
+	if worldFileType != "application/x-rar-compressed" {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapWorldFile)
+		return
+	}
+
+	if _, err := worldFile.Seek(0, 0); err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapWorldFile)
+		return
+	}
+
+	// config file
+	configFile, configFileHeader, err := c.Request.FormFile("configFile")
+	if err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingMapCreateValues)
+		return
+	}
+
+	defer func(file multipart.File) {
+		if err := file.Close(); err != nil {
+			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapConfigFile)
+			return
+		}
+	}(configFile)
+
+	configFileBuffer := make([]byte, configFileHeader.Size)
+	if _, err = configFile.Read(configFileBuffer); err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapConfigFile)
+		return
+	}
+
+	configFileType := http.DetectContentType(configFileBuffer)
+	if configFileType != "text/plain; charset=utf-8" {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapConfigFile)
+		return
+	}
+
+	if _, err := configFile.Seek(0, 0); err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidMapConfigFile)
+		return
+	}
+
+	if err := h.services.CreateMap(input.MiniGame, input.Format, input.Map, input.Version, worldFile, configFile); err != nil {
+		h.services.HandleInternalErr(c, errors.ErrS3CreatingMap, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, models.Response{
 		Success: true,
-		Formats: formatsList,
-	})
-}
-
-func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
-	minigame := c.Param("minigame")
-	format := c.Param("format")
-
-	contents, err := h.services.GetMiniGameFormatMapsList(minigame, format)
-	if err != nil {
-		h.services.HandleInternalErr(c, errors.ErrS3GettingMiniGameFormatMapsList, err)
-		return
-	}
-
-	if len(contents) == 0 {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrS3EmptyMiniGameFormatMapsList)
-		return
-	}
-
-	var mapsList []models.Map
-	for _, key := range contents {
-		foldersList := *key.Key
-
-		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
-		for index, folder := range folders {
-			if index == 2 {
-				mapName := folder
-
-				var isCanAdd bool
-				for _, minigameMap := range mapsList {
-					if minigameMap.Name == mapName {
-						continue
-					}
-					isCanAdd = true
-					break
-				}
-
-				if isCanAdd || len(mapsList) == 0 {
-					mapsList = append(mapsList, models.Map{
-						Name:     mapName,
-						Versions: nil,
-					})
-				}
-			} else if index == 3 {
-				mapName := folders[2]
-				version := folder
-
-				for mapIndex, minigameMap := range mapsList {
-					if minigameMap.Name != mapName {
-						continue
-					}
-
-					var isCanAdd bool
-					for _, ver := range minigameMap.Versions {
-						if ver == version {
-							continue
-						}
-						isCanAdd = true
-						break
-					}
-
-					if isCanAdd || len(minigameMap.Versions) == 0 {
-						minigameMap.Versions = append(minigameMap.Versions, version)
-						mapsList[mapIndex].Versions = minigameMap.Versions
-					}
-					break
-				}
-			}
-		}
-	}
-
-	c.JSON(http.StatusOK, models.MiniGameFormatMapsResponse{
-		Success: true,
-		Maps:    mapsList,
-	})
-}
-
-func (h *Handler) MapVersionsGetHandler(c *gin.Context) {
-	minigame := c.Param("minigame")
-	format := c.Param("format")
-	mapName := c.Param("map")
-
-	contents, err := h.services.GetMiniGameFormatMapVersionsList(minigame, format, mapName)
-	if err != nil {
-		h.services.HandleInternalErr(c, errors.ErrS3GettingMiniGameFormatMapVersionsList, err)
-		return
-	}
-
-	if len(contents) == 0 {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrS3EmptyMiniGameFormatMapVersionsList)
-		return
-	}
-
-	var versionsList []string
-	for _, key := range contents {
-		foldersList := *key.Key
-
-		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
-		for index, folder := range folders {
-			if index == 3 {
-				version := folder
-
-				var isCanAdd bool
-				for _, ver := range versionsList {
-					if ver == version {
-						continue
-					}
-					isCanAdd = true
-					break
-				}
-
-				if isCanAdd || len(versionsList) == 0 {
-					versionsList = append(versionsList, version)
-				}
-			}
-		}
-	}
-
-	c.JSON(http.StatusOK, models.MiniGameFormatMapVersionsResponse{
-		Success:  true,
-		Versions: versionsList,
 	})
 }
 

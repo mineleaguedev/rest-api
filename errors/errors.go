@@ -2,6 +2,7 @@ package errors
 
 import "errors"
 
+// DATABASE
 var (
 	ErrDBGettingLastInsertId = errors.New("error getting last insert id from insert database query")
 	ErrDBGettingRowsAffected = errors.New("error getting rows affected from update database query")
@@ -58,13 +59,13 @@ var (
 	ErrDBMoneyAddition      = errors.New("error money addition in general database")
 	ErrDBSavingTransferInfo = errors.New("error saving transfer info into general database")
 
-	ErrDBRegisteringUser      = errors.New("error inserting user to general database")
+	ErrDBRegisteringUser      = errors.New("error inserting user into general database")
 	ErrDBGettingUser          = errors.New("error getting user from general database")
 	ErrDBUpdatingUserPassword = errors.New("error updating password in general database")
 
-	ErrS3UploadingSkin  = errors.New("error uploading skin to skins bucket")
+	ErrS3UploadingSkin  = errors.New("error uploading skin into skins bucket")
 	ErrS3DeletingSkin   = errors.New("error deleting skin from skins bucket")
-	ErrS3UploadingCloak = errors.New("error uploading cloak to cloaks bucket")
+	ErrS3UploadingCloak = errors.New("error uploading cloak into cloaks bucket")
 	ErrS3DeletingCloak  = errors.New("error deleting cloak from cloaks bucket")
 
 	ErrSendingEmail = errors.New("error sending email")
@@ -89,7 +90,7 @@ var (
 	ErrPlayerIsNotBanned = errors.New("player is not banned")
 	ErrPlayerIsNotMuted  = errors.New("player is not muted")
 
-	ErrMiniGamesDBCreatingPlayer         = errors.New("error inserting player to minigames database")
+	ErrMiniGamesDBCreatingPlayer         = errors.New("error inserting player into minigames database")
 	ErrMiniGamesDBGettingPlayer          = errors.New("error getting player from minigames database")
 	ErrMiniGamesDBUpdatingPlayerExp      = errors.New("error updating player exp in minigames database")
 	ErrMiniGamesDBUpdatingPlayerRank     = errors.New("error updating player rank in minigames database")
@@ -98,12 +99,17 @@ var (
 	ErrMiniGamesDBUpdatingPlayerLastSeen = errors.New("error updating player last seen in minigames database")
 
 	ErrMiniGamesDBGettingPlayerBanInfo = errors.New("error getting player's ban info from minigame database")
-	ErrMiniGamesDBBanningPlayer        = errors.New("error inserting player ban info to minigames database")
+	ErrMiniGamesDBBanningPlayer        = errors.New("error inserting player ban info into minigames database")
 	ErrMiniGamesDBUnbanningPlayer      = errors.New("error updating player ban status in minigames database")
 
 	ErrMiniGamesDBGettingPlayerMuteInfo = errors.New("error getting player's mute info from minigame database")
-	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info to minigames database")
+	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info into minigames database")
 	ErrMiniGamesDBUnmutingPlayer        = errors.New("error updating player mute status in minigames database")
+
+	ErrMissingMapCreateValues = errors.New("missing map create values")
+
+	ErrInvalidMapWorldFile  = errors.New("invalid map world file")
+	ErrInvalidMapConfigFile = errors.New("invalid map config file")
 
 	ErrS3GettingMapsList                      = errors.New("error getting maps list from s3 maps bucket")
 	ErrS3GettingMiniGameMapsList              = errors.New("error getting minigame maps list from s3 maps bucket")
@@ -112,6 +118,7 @@ var (
 	ErrS3EmptyMiniGameFormatMapsList          = errors.New("empty list of minigame format maps in s3 maps bucket")
 	ErrS3GettingMiniGameFormatMapVersionsList = errors.New("error getting minigame format map versions list from s3 maps bucket")
 	ErrS3EmptyMiniGameFormatMapVersionsList   = errors.New("empty list of minigame format map versions in s3 maps bucket")
+	ErrS3CreatingMap                          = errors.New("error creating map in s3 maps bucket")
 	ErrS3DownloadingMapWorld                  = errors.New("error downloading map world from s3 maps bucket")
 	ErrS3DownloadingMapConfig                 = errors.New("error downloading map config from s3 maps bucket")
 )
