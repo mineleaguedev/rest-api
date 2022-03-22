@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mineleaguedev/rest-api/handlers/auth"
 	"github.com/mineleaguedev/rest-api/handlers/cabinet"
+	"github.com/mineleaguedev/rest-api/handlers/maps"
 	"github.com/mineleaguedev/rest-api/handlers/minigames"
 	"github.com/mineleaguedev/rest-api/models"
 	"github.com/mineleaguedev/rest-api/services"
@@ -15,14 +16,16 @@ type Handler struct {
 	cabinet   *cabinet.Handler
 	auth      *auth.Handler
 	minigames *minigames.Handler
+	maps      *maps.Handler
 	services  *services.Service
 }
 
-func NewHandler(services *services.Service, middleware models.JWTMiddleware, generalDB, miniGamesDB *sql.DB) *Handler {
+func NewHandler(services *services.Service, middleware models.JWTMiddleware, generalDB, minigamesDB *sql.DB) *Handler {
 	return &Handler{
 		cabinet:   cabinet.NewHandler(services, generalDB),
 		auth:      auth.NewHandler(services, middleware, generalDB),
-		minigames: minigames.NewHandler(services, miniGamesDB),
+		minigames: minigames.NewHandler(services, minigamesDB),
+		maps:      maps.NewHandler(services),
 		services:  services,
 	}
 }
@@ -63,16 +66,30 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	minigamesGroup := router.Group("/")
 	{
 		minigamesGroup.POST("/player", h.minigames.PlayerCreateHandler)
-		minigamesGroup.GET("/user/name/:name", h.minigames.PlayerGetHandler)
-		minigamesGroup.PUT("/user/exp", h.minigames.PlayerExpUpdateHandler)
-		minigamesGroup.PUT("/user/rank", h.minigames.PlayerRankUpdateHandler)
-		minigamesGroup.PUT("/user/coins", h.minigames.PlayerCoinsUpdateHandler)
-		minigamesGroup.PUT("/user/playtime", h.minigames.PlayerPlaytimeUpdateHandler)
-		minigamesGroup.PUT("/user/lastSeen", h.minigames.PlayerLastSeenUpdateHandler)
+		minigamesGroup.GET("/player/name/:name", h.minigames.PlayerGetHandler)
+		minigamesGroup.PUT("/player/exp", h.minigames.PlayerExpUpdateHandler)
+		minigamesGroup.PUT("/player/rank", h.minigames.PlayerRankUpdateHandler)
+		minigamesGroup.PUT("/player/coins", h.minigames.PlayerCoinsUpdateHandler)
+		minigamesGroup.PUT("/player/playtime", h.minigames.PlayerPlaytimeUpdateHandler)
+		minigamesGroup.PUT("/player/lastSeen", h.minigames.PlayerLastSeenUpdateHandler)
 		minigamesGroup.POST("/ban", h.minigames.PlayerBanHandler)
 		minigamesGroup.POST("/unban", h.minigames.PlayerUnbanHandler)
 		minigamesGroup.POST("/mute", h.minigames.PlayerMuteHandler)
 		minigamesGroup.POST("/unmute", h.minigames.PlayerUnmuteHandler)
+	}
+
+	mapsGroup := router.Group("/")
+	{
+		mapsGroup.GET("/map", h.maps.MapsGetHandler)
+		//mapsGroup.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler)
+		//mapsGroup.GET("/map/:minigame/:format", h.maps.FormatMapsGetHandler)
+		//mapsGroup.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler)
+		//mapsGroup.GET("/map/:minigame/:format/:map/:version", h.maps.MapGetHandler)
+		//
+		//mapsGroup.POST("/map", h.maps.MiniGameCreateHandler)
+		//mapsGroup.POST("/map/:minigame", h.maps.FormatCreateHandler)
+		//mapsGroup.POST("/map/:minigame/:format", h.maps.MapCreateHandler)
+		//mapsGroup.POST("/map/:minigame/:format/:map", h.maps.VersionCreateHandler)
 	}
 
 	return router

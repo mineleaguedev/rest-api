@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/kataras/hcaptcha"
@@ -51,11 +52,12 @@ type Captcha interface {
 	VerifyCaptcha(token string) (response hcaptcha.Response)
 }
 
-type Skin interface {
+type S3 interface {
 	UploadSkin(username string, file multipart.File) error
 	DeleteSkin(username string) error
 	UploadCloak(username string, file multipart.File) error
 	DeleteCloak(username string) error
+	GetMapsList() ([]*s3.Object, error)
 }
 
 type Service struct {
@@ -64,17 +66,17 @@ type Service struct {
 	Redis
 	Email
 	Captcha
-	Skin
+	S3
 }
 
 func NewService(jwtMiddleware models.JWTMiddleware, redisConfig models.RedisConfig, emailConfig models.EmailConfig,
-	captchaConfig models.CaptchaConfig, skinConfig models.SkinConfig) *Service {
+	captchaConfig models.CaptchaConfig, s3Config models.S3Config) *Service {
 	return &Service{
 		Token:   NewTokenService(jwtMiddleware),
 		Err:     NewErrService(),
 		Redis:   NewRedisService(redisConfig),
 		Email:   NewEmailService(emailConfig),
 		Captcha: NewCaptchaService(captchaConfig),
-		Skin:    NewSkinService(skinConfig),
+		S3:      NewS3Service(s3Config),
 	}
 }

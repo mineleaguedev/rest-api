@@ -49,7 +49,7 @@ func main() {
 		log.Fatalf("Error connecting to general database: %s", err)
 	}
 
-	miniGamesDB, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
+	minigamesDB, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
 		os.Getenv("minigamesdb.username"),
 		os.Getenv("minigamesdb.password"),
 		os.Getenv("minigamesdb.host"),
@@ -112,7 +112,7 @@ func main() {
 	}
 	emailClient := ses.New(sess)
 
-	// setup skin
+	// setup skins
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
@@ -124,10 +124,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error connecting to skins s3: %s", err)
 	}
-	skinUploader := s3manager.NewUploader(sess)
-	skinDeleter := s3.New(sess)
+	skinsUploader := s3manager.NewUploader(sess)
+	skinsDeleter := s3.New(sess)
 
-	// setup cloak
+	// setup cloaks
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
@@ -139,8 +139,23 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error connecting to cloaks s3: %s", err)
 	}
-	cloakUploader := s3manager.NewUploader(sess)
-	cloakDeleter := s3.New(sess)
+	cloaksUploader := s3manager.NewUploader(sess)
+	cloaksDeleter := s3.New(sess)
+
+	// setup maps
+	sess, err = session.NewSession(&aws.Config{
+		Region: awsRegion,
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("aws.s3.maps.access.key.id"),
+			os.Getenv("aws.s3.maps.secret.access.key"),
+			"",
+		),
+	})
+	if err != nil {
+		log.Fatalf("Error connecting to maps s3: %s", err)
+	}
+	mapsUploader := s3manager.NewUploader(sess)
+	mapsDeleter := s3.New(sess)
 
 	service := services.NewService(
 		middleware,
@@ -173,15 +188,18 @@ func main() {
 			DeleteSkinForm:  template.Must(template.ParseFiles("./forms/delete_skin_form.html")),
 			ChangeCloakForm: template.Must(template.ParseFiles("./forms/change_cloak_form.html")),
 			DeleteCloakForm: template.Must(template.ParseFiles("./forms/delete_cloak_form.html")),
-		}, models.SkinConfig{
-			SkinBucket:    aws.String(os.Getenv("aws.s3.skins.bucket.name")),
-			SkinUploader:  skinUploader,
-			SkinDeleter:   skinDeleter,
-			CloakBucket:   aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
-			CloakUploader: cloakUploader,
-			CloakDeleter:  cloakDeleter,
+		}, models.S3Config{
+			SkinsBucket:    aws.String(os.Getenv("aws.s3.skins.bucket.name")),
+			SkinsUploader:  skinsUploader,
+			SkinsDeleter:   skinsDeleter,
+			CloaksBucket:   aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
+			CloaksUploader: cloaksUploader,
+			CloaksDeleter:  cloaksDeleter,
+			MapsBucket:     aws.String(os.Getenv("aws.s3.maps.bucket.name")),
+			MapsUploader:   mapsUploader,
+			MapsDeleter:    mapsDeleter,
 		})
-	handler := handlers.NewHandler(service, middleware, generalDB, miniGamesDB)
+	handler := handlers.NewHandler(service, middleware, generalDB, minigamesDB)
 
 	router := handler.InitRoutes()
 	if err := router.Run(":8080"); err != nil {

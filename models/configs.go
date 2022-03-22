@@ -46,11 +46,14 @@ type CaptchaConfig struct {
 	DeleteCloakForm *template.Template
 }
 
-type SkinConfig struct {
-	SkinBucket    *string
-	SkinUploader  *s3manager.Uploader
-	SkinDeleter   *s3.S3
-	CloakBucket   *string
-	CloakUploader *s3manager.Uploader
-	CloakDeleter  *s3.S3
+type S3Config struct {
+	SkinsBucket    *string
+	SkinsUploader  *s3manager.Uploader
+	SkinsDeleter   *s3.S3
+	CloaksBucket   *string
+	CloaksUploader *s3manager.Uploader
+	CloaksDeleter  *s3.S3
+	MapsBucket     *string
+	MapsUploader   *s3manager.Uploader
+	MapsDeleter    *s3.S3
 }

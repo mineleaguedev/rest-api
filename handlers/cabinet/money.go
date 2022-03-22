@@ -50,18 +50,18 @@ func (h *Handler) MoneyTransferHandler(c *gin.Context) {
 	}
 
 	if _, err := h.db.Exec("UPDATE `users` SET `money` = `money` - ? WHERE `id` LIKE ?", input.Amount, userId); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrMoneySubtraction, err)
+		h.services.HandleInternalErr(c, errors.ErrDBMoneySubtraction, err)
 		return
 	}
 
 	if _, err := h.db.Exec("UPDATE `users` SET `money` = `money` + ? WHERE `username` LIKE ?", input.Amount, input.Username); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrMoneyAddition, err)
+		h.services.HandleInternalErr(c, errors.ErrDBMoneyAddition, err)
 		return
 	}
 
 	if _, err := h.db.Exec("INSERT INTO `transfers` (`from_id`, `to_id`, `amount`) VALUES (?, ?, ?)",
 		userId, toId, input.Amount); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrSavingTransferInfo, err)
+		h.services.HandleInternalErr(c, errors.ErrDBSavingTransferInfo, err)
 		return
 	}
 

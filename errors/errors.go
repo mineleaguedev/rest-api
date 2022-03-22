@@ -7,6 +7,7 @@ var (
 	ErrDBGettingRowsAffected = errors.New("error getting rows affected from update database query")
 )
 
+// GENERAL
 var (
 	ErrMissingAuthValues          = errors.New("missing auth values")
 	ErrMissingRegValues           = errors.New("missing reg values")
@@ -52,23 +53,24 @@ var (
 	ErrRefreshTokenUuidNotExists   = errors.New("failed to get refresh token uuid")
 	ErrRefreshTokenUserIdNotExists = errors.New("failed to get refresh token user id")
 
-	ErrUploadingSkin  = errors.New("error uploading skin")
-	ErrDeletingSkin   = errors.New("error deleting skin")
-	ErrUploadingCloak = errors.New("error uploading cloak")
-	ErrDeletingCloak  = errors.New("error deleting cloak")
-
-	ErrNotEnoughMoney     = errors.New("error not enough money")
-	ErrMoneySubtraction   = errors.New("error money subtraction")
-	ErrMoneyAddition      = errors.New("error money addition")
-	ErrSavingTransferInfo = errors.New("error saving transfer info")
+	ErrNotEnoughMoney       = errors.New("error not enough money")
+	ErrDBMoneySubtraction   = errors.New("error money subtraction in general database")
+	ErrDBMoneyAddition      = errors.New("error money addition in general database")
+	ErrDBSavingTransferInfo = errors.New("error saving transfer info into general database")
 
 	ErrDBRegisteringUser      = errors.New("error inserting user to general database")
 	ErrDBGettingUser          = errors.New("error getting user from general database")
 	ErrDBUpdatingUserPassword = errors.New("error updating password in general database")
 
+	ErrS3UploadingSkin  = errors.New("error uploading skin to skins bucket")
+	ErrS3DeletingSkin   = errors.New("error deleting skin from skins bucket")
+	ErrS3UploadingCloak = errors.New("error uploading cloak to cloaks bucket")
+	ErrS3DeletingCloak  = errors.New("error deleting cloak from cloaks bucket")
+
 	ErrSendingEmail = errors.New("error sending email")
 )
 
+// MINIGAMES
 var (
 	ErrMissingPlayerCreateValues         = errors.New("missing player create values")
 	ErrMissingPlayerUpdateExpValues      = errors.New("missing player update exp values")
@@ -95,11 +97,13 @@ var (
 	ErrMiniGamesDBUpdatingPlayerPlaytime = errors.New("error updating player playtime in minigames database")
 	ErrMiniGamesDBUpdatingPlayerLastSeen = errors.New("error updating player last seen in minigames database")
 
-	ErrMiniGamesDBGettingPlayerBanInfo = errors.New("error getting player's ban info")
+	ErrMiniGamesDBGettingPlayerBanInfo = errors.New("error getting player's ban info from minigame database")
 	ErrMiniGamesDBBanningPlayer        = errors.New("error inserting player ban info to minigames database")
 	ErrMiniGamesDBUnbanningPlayer      = errors.New("error updating player ban status in minigames database")
 
-	ErrMiniGamesDBGettingPlayerMuteInfo = errors.New("error getting player's mute info")
+	ErrMiniGamesDBGettingPlayerMuteInfo = errors.New("error getting player's mute info from minigame database")
 	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info to minigames database")
 	ErrMiniGamesDBUnmutingPlayer        = errors.New("error updating player mute status in minigames database")
+
+	ErrS3GettingMapsList = errors.New("error getting maps list from s3 maps bucket")
 )

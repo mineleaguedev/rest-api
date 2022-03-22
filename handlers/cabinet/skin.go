@@ -98,7 +98,7 @@ func (h *Handler) SkinChangeHandler(c *gin.Context) {
 	}
 
 	if err := h.services.UploadSkin(username, file); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrUploadingSkin, err)
+		h.services.HandleInternalErr(c, errors.ErrS3UploadingSkin, err)
 		return
 	}
 
@@ -133,7 +133,7 @@ func (h *Handler) SkinDeleteHandler(c *gin.Context) {
 	}
 
 	if err := h.services.DeleteSkin(username); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrDeletingSkin, err)
+		h.services.HandleInternalErr(c, errors.ErrS3DeletingSkin, err)
 		return
 	}
 

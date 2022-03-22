@@ -98,7 +98,7 @@ func (h *Handler) CloakChangeHandler(c *gin.Context) {
 	}
 
 	if err := h.services.UploadCloak(username, file); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrUploadingCloak, err)
+		h.services.HandleInternalErr(c, errors.ErrS3UploadingCloak, err)
 		return
 	}
 
@@ -133,7 +133,7 @@ func (h *Handler) CloakDeleteHandler(c *gin.Context) {
 	}
 
 	if err := h.services.DeleteCloak(username); err != nil {
-		h.services.HandleInternalErr(c, errors.ErrDeletingCloak, err)
+		h.services.HandleInternalErr(c, errors.ErrS3DeletingCloak, err)
 		return
 	}
 
