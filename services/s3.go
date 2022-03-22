@@ -105,3 +105,16 @@ func (s *S3Service) GetMiniGameFormatMapsList(minigame, format string) ([]*s3.Ob
 
 	return resp.Contents, nil
 }
+
+func (s *S3Service) GetMiniGameFormatMapVersionsList(minigame, format, mapName string) ([]*s3.Object, error) {
+	params := &s3.ListObjectsV2Input{
+		Bucket: s.config.MapsBucket,
+		Prefix: aws.String(minigame + "/" + format + "/" + mapName),
+	}
+	resp, err := s.config.MapsDeleter.ListObjectsV2(params)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contents, nil
+}

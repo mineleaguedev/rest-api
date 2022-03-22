@@ -105,11 +105,11 @@ var (
 	ErrMiniGamesDBMutingPlayer          = errors.New("error inserting player mute info to minigames database")
 	ErrMiniGamesDBUnmutingPlayer        = errors.New("error updating player mute status in minigames database")
 
-	ErrS3GettingMapsList = errors.New("error getting maps list from s3 maps bucket")
-
-	ErrS3GettingMiniGameMapsList = errors.New("error getting minigame maps list from s3 maps bucket")
-	ErrS3EmptyMiniGameMapsList   = errors.New("empty list of minigame maps")
-
-	ErrS3GettingMiniGameFormatMapsList = errors.New("error getting minigame format maps list from s3 maps bucket")
-	ErrS3EmptyMiniGameFormatMapsList   = errors.New("empty list of minigame format maps")
+	ErrS3GettingMapsList                      = errors.New("error getting maps list from s3 maps bucket")
+	ErrS3GettingMiniGameMapsList              = errors.New("error getting minigame maps list from s3 maps bucket")
+	ErrS3EmptyMiniGameMapsList                = errors.New("empty list of minigame maps")
+	ErrS3GettingMiniGameFormatMapsList        = errors.New("error getting minigame format maps list from s3 maps bucket")
+	ErrS3EmptyMiniGameFormatMapsList          = errors.New("empty list of minigame format maps")
+	ErrS3GettingMiniGameFormatMapVersionsList = errors.New("error getting minigame format map versions list from s3 maps bucket")
+	ErrS3EmptyMiniGameFormatMapVersionsList   = errors.New("empty list of minigame format map versions")
 )

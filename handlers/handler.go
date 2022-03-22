@@ -83,7 +83,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		mapsGroup.GET("/map", h.maps.MapsGetHandler)
 		mapsGroup.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler)
 		mapsGroup.GET("/map/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler)
-		//mapsGroup.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler)
+		mapsGroup.GET("/map/:minigame/:format/:map", h.maps.MiniGameFormatMapVersionsGetHandler)
 		//mapsGroup.GET("/map/:minigame/:format/:map/:version", h.maps.MapGetHandler)
 		//
 		//mapsGroup.POST("/map", h.maps.MiniGameCreateHandler)

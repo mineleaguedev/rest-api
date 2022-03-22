@@ -60,6 +60,7 @@ type S3 interface {
 	GetMapsList() ([]*s3.Object, error)
 	GetMiniGameMapsList(minigame string) ([]*s3.Object, error)
 	GetMiniGameFormatMapsList(minigame, format string) ([]*s3.Object, error)
+	GetMiniGameFormatMapVersionsList(minigame, format, mapName string) ([]*s3.Object, error)
 }
 
 type Service struct {

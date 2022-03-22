@@ -29,3 +29,8 @@ type MiniGameFormatMapsResponse struct {
 	Success bool  `json:"success"`
 	Maps    []Map `json:"maps"`
 }
+
+type MiniGameFormatMapVersionsResponse struct {
+	Success  bool     `json:"success"`
+	Versions []string `json:"versions"`
+}

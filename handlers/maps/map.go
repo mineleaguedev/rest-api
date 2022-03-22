@@ -330,3 +330,50 @@ func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
 		Maps:    mapsList,
 	})
 }
+
+func (h *Handler) MiniGameFormatMapVersionsGetHandler(c *gin.Context) {
+	minigame := c.Param("minigame")
+	format := c.Param("format")
+	mapName := c.Param("map")
+
+	contents, err := h.services.GetMiniGameFormatMapVersionsList(minigame, format, mapName)
+	if err != nil {
+		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3GettingMiniGameFormatMapVersionsList)
+		return
+	}
+
+	if len(contents) == 0 {
+		h.services.HandleErr(c, http.StatusInternalServerError, errors.ErrS3EmptyMiniGameFormatMapVersionsList)
+		return
+	}
+
+	var versionsList []string
+	for _, key := range contents {
+		foldersList := *key.Key
+
+		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
+		for index, folder := range folders {
+			if index == 3 {
+				version := folder
+
+				var isCanAdd bool
+				for _, ver := range versionsList {
+					if ver == version {
+						continue
+					}
+					isCanAdd = true
+					break
+				}
+
+				if isCanAdd || len(versionsList) == 0 {
+					versionsList = append(versionsList, version)
+				}
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, models.MiniGameFormatMapVersionsResponse{
+		Success:  true,
+		Versions: versionsList,
+	})
+}
