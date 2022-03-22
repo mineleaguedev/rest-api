@@ -49,11 +49,12 @@ type CaptchaConfig struct {
 type S3Config struct {
 	SkinsBucket    *string
 	SkinsUploader  *s3manager.Uploader
-	SkinsDeleter   *s3.S3
+	SkinsManager   *s3.S3
 	CloaksBucket   *string
 	CloaksUploader *s3manager.Uploader
-	CloaksDeleter  *s3.S3
+	CloaksManager  *s3.S3
 	MapsBucket     *string
 	MapsUploader   *s3manager.Uploader
-	MapsDeleter    *s3.S3
+	MapsDownloader *s3manager.Downloader
+	MapsManager    *s3.S3
 }

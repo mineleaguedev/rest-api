@@ -38,6 +38,13 @@ func main() {
 		log.Fatalf("Error loading config: %s", err.Error())
 	}
 
+	if err := os.RemoveAll("files/"); err != nil {
+		log.Fatalf("Error deleting files folder: %s", err.Error())
+	}
+	if err := os.Mkdir("files/", 0755); err != nil {
+		log.Fatalf("Error creating files folder: %s", err.Error())
+	}
+
 	generalDB, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
 		os.Getenv("generaldb.username"),
 		os.Getenv("generaldb.password"),
@@ -125,7 +132,7 @@ func main() {
 		log.Fatalf("Error connecting to skins s3: %s", err)
 	}
 	skinsUploader := s3manager.NewUploader(sess)
-	skinsDeleter := s3.New(sess)
+	skinsManager := s3.New(sess)
 
 	// setup cloaks
 	sess, err = session.NewSession(&aws.Config{
@@ -140,7 +147,7 @@ func main() {
 		log.Fatalf("Error connecting to cloaks s3: %s", err)
 	}
 	cloaksUploader := s3manager.NewUploader(sess)
-	cloaksDeleter := s3.New(sess)
+	cloaksManager := s3.New(sess)
 
 	// setup maps
 	sess, err = session.NewSession(&aws.Config{
@@ -155,7 +162,8 @@ func main() {
 		log.Fatalf("Error connecting to maps s3: %s", err)
 	}
 	mapsUploader := s3manager.NewUploader(sess)
-	mapsDeleter := s3.New(sess)
+	mapsDownloader := s3manager.NewDownloader(sess)
+	mapsManager := s3.New(sess)
 
 	service := services.NewService(
 		middleware,
@@ -191,13 +199,14 @@ func main() {
 		}, models.S3Config{
 			SkinsBucket:    aws.String(os.Getenv("aws.s3.skins.bucket.name")),
 			SkinsUploader:  skinsUploader,
-			SkinsDeleter:   skinsDeleter,
+			SkinsManager:   skinsManager,
 			CloaksBucket:   aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
 			CloaksUploader: cloaksUploader,
-			CloaksDeleter:  cloaksDeleter,
+			CloaksManager:  cloaksManager,
 			MapsBucket:     aws.String(os.Getenv("aws.s3.maps.bucket.name")),
 			MapsUploader:   mapsUploader,
-			MapsDeleter:    mapsDeleter,
+			MapsDownloader: mapsDownloader,
+			MapsManager:    mapsManager,
 		})
 	handler := handlers.NewHandler(service, middleware, generalDB, minigamesDB)
 
