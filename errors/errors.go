@@ -6,6 +6,8 @@ import "errors"
 var (
 	ErrDBGettingLastInsertId = errors.New("error getting last insert id from insert database query")
 	ErrDBGettingRowsAffected = errors.New("error getting rows affected from update database query")
+
+	ErrDBFuckYouBitch = errors.New("fuck you bitch")
 )
 
 // GENERAL

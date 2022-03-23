@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mineleaguedev/rest-api/handlers/admin"
 	"github.com/mineleaguedev/rest-api/handlers/auth"
 	"github.com/mineleaguedev/rest-api/handlers/cabinet"
 	"github.com/mineleaguedev/rest-api/handlers/maps"
@@ -16,6 +17,7 @@ import (
 type Handler struct {
 	cabinet   *cabinet.Handler
 	auth      *auth.Handler
+	admin     *admin.Handler
 	minigames *minigames.Handler
 	maps      *maps.Handler
 	plugins   *plugins.Handler
@@ -26,6 +28,7 @@ func NewHandler(services *services.Service, middleware models.JWTMiddleware, gen
 	return &Handler{
 		cabinet:   cabinet.NewHandler(services, generalDB),
 		auth:      auth.NewHandler(services, middleware, generalDB),
+		admin:     admin.NewHandler(services, generalDB, minigamesDB),
 		minigames: minigames.NewHandler(services, minigamesDB),
 		maps:      maps.NewHandler(services),
 		plugins:   plugins.NewHandler(services),
@@ -66,7 +69,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		cabinetGroup.POST("/transferMoney", h.cabinet.MoneyTransferHandler)
 	}
 
-	minigamesGroup := router.Group("/")
+	minigamesGroup := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
 	{
 		minigamesGroup.POST("/player", h.minigames.PlayerCreateHandler)
 		minigamesGroup.GET("/player/name/:name", h.minigames.PlayerGetHandler)
@@ -83,24 +86,24 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	mapsGroup := router.Group("/")
 	{
-		mapsGroup.GET("/map", h.maps.MapsGetHandler)
-		mapsGroup.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler)
-		mapsGroup.GET("/map/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler)
-		mapsGroup.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler)
-		mapsGroup.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler)
-		mapsGroup.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler)
+		mapsGroup.GET("/map", h.maps.MapsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		mapsGroup.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		mapsGroup.GET("/map/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		mapsGroup.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		mapsGroup.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		mapsGroup.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
 
-		mapsGroup.POST("/map", h.maps.MapUploadHandler)
+		mapsGroup.POST("/map", h.maps.MapUploadHandler).Use(h.admin.AdminAuthMiddleware())
 	}
 
 	pluginsGroup := router.Group("/")
 	{
-		pluginsGroup.GET("/plugin", h.plugins.PluginsGetHandler)
-		pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler)
-		pluginsGroup.GET("/plugin/:name/:version/jar", h.plugins.PluginJarGetHandler)
-		pluginsGroup.GET("/plugin/:name/:version/config", h.plugins.PluginConfigGetHandler)
+		pluginsGroup.GET("/plugin", h.plugins.PluginsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		pluginsGroup.GET("/plugin/:name/:version/jar", h.plugins.PluginJarGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		pluginsGroup.GET("/plugin/:name/:version/config", h.plugins.PluginConfigGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
 
-		pluginsGroup.POST("/plugin", h.plugins.PluginUploadHandler)
+		pluginsGroup.POST("/plugin", h.plugins.PluginUploadHandler).Use(h.admin.AdminAuthMiddleware())
 	}
 
 	return router
