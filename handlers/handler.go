@@ -106,5 +106,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		pluginsGroup.POST("/plugin", h.plugins.PluginUploadHandler).Use(h.admin.AdminAuthMiddleware())
 	}
 
+	adminGroup := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())
+	{
+		adminGroup.GET("/server", h.admin.ServersGetHandler)
+		adminGroup.POST("/server", h.admin.ServerAddHandler)
+	}
+
 	return router
 }
