@@ -6,8 +6,6 @@ import "errors"
 var (
 	ErrDBGettingLastInsertId = errors.New("error getting last insert id from insert database query")
 	ErrDBGettingRowsAffected = errors.New("error getting rows affected from update database query")
-
-	ErrDBFuckYouBitch = errors.New("fuck you bitch")
 )
 
 // GENERAL
@@ -22,6 +20,7 @@ var (
 	ErrMissingChangeCloakValues   = errors.New("missing change cloak values")
 	ErrMissingDeleteCloakValues   = errors.New("missing delete cloak values")
 	ErrMissingTransferMoneyValues = errors.New("missing transfer money values")
+	ErrMissingAddServerValues     = errors.New("missing add server values")
 
 	ErrInvalidUsername = errors.New("invalid username")
 	ErrInvalidPassword = errors.New("invalid password")
@@ -29,6 +28,7 @@ var (
 	ErrInvalidSkin     = errors.New("invalid skin")
 	ErrInvalidCloak    = errors.New("invalid cloak")
 
+	ErrFuckYouBitch      = errors.New("fuck you bitch")
 	ErrUserAlreadyExists = errors.New("username or email already exists")
 	ErrUserDoesNotExist  = errors.New("user does not exist")
 
@@ -64,6 +64,9 @@ var (
 	ErrDBRegisteringUser      = errors.New("error inserting user into general database")
 	ErrDBGettingUser          = errors.New("error getting user from general database")
 	ErrDBUpdatingUserPassword = errors.New("error updating password in general database")
+	ErrDBAddingServer         = errors.New("error adding server into general database")
+	ErrDBGettingServers       = errors.New("error getting servers from general database")
+	ErrDBServerAlreadyExists  = errors.New("server already exists")
 
 	ErrS3UploadingSkin  = errors.New("error uploading skin into skins bucket")
 	ErrS3DeletingSkin   = errors.New("error deleting skin from skins bucket")
