@@ -42,7 +42,6 @@ func (h *Handler) PluginVersionsGetHandler(c *gin.Context) {
 
 				if isCanAdd || len(versionsList) == 0 {
 					versionsList = append(versionsList, version)
-					isCanAdd = false
 				}
 			}
 		}

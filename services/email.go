@@ -47,9 +47,8 @@ func (s *EmailService) SendRegEmail(to, token string) error {
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			return awsErr
-		} else {
-			return err
 		}
+		return err
 	}
 
 	return nil
@@ -85,9 +84,8 @@ func (s *EmailService) SendPassResetEmail(to, token, username, ipAddress string)
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			return awsErr
-		} else {
-			return err
 		}
+		return err
 	}
 
 	return nil
@@ -123,9 +121,8 @@ func (s *EmailService) SendNewPassEmail(to, username, password string) error {
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			return awsErr
-		} else {
-			return err
 		}
+		return err
 	}
 
 	return nil
@@ -160,9 +157,8 @@ func (s *EmailService) SendChangePassEmail(to, ipAddress string) error {
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			return awsErr
-		} else {
-			return err
 		}
+		return err
 	}
 
 	return nil
