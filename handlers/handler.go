@@ -100,8 +100,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		pluginsGroup.GET("/plugin", h.plugins.PluginsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
 		pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		pluginsGroup.GET("/plugin/:name/:version/jar", h.plugins.PluginJarGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		pluginsGroup.GET("/plugin/:name/:version/config", h.plugins.PluginConfigGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
+		pluginsGroup.GET("/plugin/:name/:version/", h.plugins.PluginGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
 
 		pluginsGroup.POST("/plugin", h.plugins.PluginUploadHandler).Use(h.admin.AdminAuthMiddleware())
 	}

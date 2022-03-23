@@ -10,15 +10,13 @@ import (
 )
 
 var (
-	mapWorldFileName     = "world.rar"
-	mapConfigFileName    = "map.yml"
-	pluginJarFileName    = "plugin.jar"
-	pluginConfigFileName = "config.yml"
+	mapWorldFileName  = "world.rar"
+	mapConfigFileName = "map.yml"
+	pluginJarFileName = "plugin.jar"
 
-	mapWorldFilePath     = "files/" + mapWorldFileName
-	mapConfigFilePath    = "files/" + mapConfigFileName
-	pluginJarFilePath    = "files/" + pluginJarFileName
-	pluginConfigFilePath = "files/" + pluginConfigFileName
+	mapWorldFilePath  = "files/" + mapWorldFileName
+	mapConfigFilePath = "files/" + mapConfigFileName
+	pluginJarFilePath = "files/" + pluginJarFileName
 )
 
 type S3Service struct {
@@ -215,26 +213,13 @@ func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
 	return resp.Contents, nil
 }
 
-func (s *S3Service) UploadPlugin(plugin, version string, jarFile, configFile multipart.File) error {
-	objects := []s3manager.BatchUploadObject{
-		{
-			Object: &s3manager.UploadInput{
-				Bucket: s.config.PluginsBucket,
-				Key:    aws.String(plugin + "/" + version + "/" + pluginJarFileName),
-				Body:   jarFile,
-			},
-		},
-		{
-			Object: &s3manager.UploadInput{
-				Bucket: s.config.PluginsBucket,
-				Key:    aws.String(plugin + "/" + version + "/" + pluginConfigFileName),
-				Body:   configFile,
-			},
-		},
-	}
-
-	iter := &s3manager.UploadObjectsIterator{Objects: objects}
-	if err := s.config.PluginsUploader.UploadWithIterator(aws.BackgroundContext(), iter); err != nil {
+func (s *S3Service) UploadPlugin(plugin, version string, jarFile multipart.File) error {
+	_, err := s.config.PluginsUploader.Upload(&s3manager.UploadInput{
+		Bucket: s.config.PluginsBucket,
+		Key:    aws.String(plugin + "/" + version + "/" + pluginJarFileName),
+		Body:   jarFile,
+	})
+	if err != nil {
 		return err
 	}
 
@@ -258,23 +243,4 @@ func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string,
 	}
 
 	return &pluginJarFilePath, &plugin, err
-}
-
-func (s *S3Service) DownloadPluginConfig(plugin, version string) (*string, *string, error) {
-	configFile, err := os.Create(pluginConfigFilePath)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer configFile.Close()
-
-	// world
-	_, err = s.config.PluginsDownloader.Download(configFile, &s3.GetObjectInput{
-		Bucket: s.config.PluginsBucket,
-		Key:    aws.String(plugin + "/" + version + "/" + pluginConfigFileName),
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return &pluginConfigFilePath, &pluginConfigFileName, err
 }

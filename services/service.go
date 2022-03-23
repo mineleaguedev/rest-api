@@ -66,9 +66,8 @@ type S3 interface {
 	DownloadMapConfig(minigame, format, mapName, version string) (*string, *string, error)
 	GetPluginsList() ([]*s3.Object, error)
 	GetPluginVersionsList(plugin string) ([]*s3.Object, error)
-	UploadPlugin(plugin, version string, jarFile, configFile multipart.File) error
+	UploadPlugin(plugin, version string, jarFile multipart.File) error
 	DownloadPluginJar(plugin, version string) (*string, *string, error)
-	DownloadPluginConfig(plugin, version string) (*string, *string, error)
 }
 
 type Service struct {

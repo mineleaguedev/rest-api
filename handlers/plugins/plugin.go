@@ -57,38 +57,7 @@ func (h *Handler) PluginUploadHandler(c *gin.Context) {
 		return
 	}
 
-	// config file
-	configFile, configFileHeader, err := c.Request.FormFile("configFile")
-	if err != nil {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingPluginUploadValues)
-		return
-	}
-
-	defer func(file multipart.File) {
-		if err := file.Close(); err != nil {
-			h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidPluginConfigFile)
-			return
-		}
-	}(configFile)
-
-	configFileBuffer := make([]byte, configFileHeader.Size)
-	if _, err = configFile.Read(configFileBuffer); err != nil {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidPluginConfigFile)
-		return
-	}
-
-	configFileType := http.DetectContentType(configFileBuffer)
-	if configFileType != "text/plain; charset=utf-8" {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidPluginConfigFile)
-		return
-	}
-
-	if _, err := configFile.Seek(0, 0); err != nil {
-		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidPluginConfigFile)
-		return
-	}
-
-	if err := h.services.UploadPlugin(input.Plugin, input.Version, jarFile, configFile); err != nil {
+	if err := h.services.UploadPlugin(input.Plugin, input.Version, jarFile); err != nil {
 		h.services.HandleInternalErr(c, errors.ErrS3UploadingPlugin, err)
 		return
 	}
@@ -98,7 +67,7 @@ func (h *Handler) PluginUploadHandler(c *gin.Context) {
 	})
 }
 
-func (h *Handler) PluginJarGetHandler(c *gin.Context) {
+func (h *Handler) PluginGetHandler(c *gin.Context) {
 	plugin := c.Param("name")
 	version := c.Param("version")
 
@@ -109,17 +78,4 @@ func (h *Handler) PluginJarGetHandler(c *gin.Context) {
 	}
 
 	c.FileAttachment(*filePath, *fileName+".jar")
-}
-
-func (h *Handler) PluginConfigGetHandler(c *gin.Context) {
-	plugin := c.Param("name")
-	version := c.Param("version")
-
-	filePath, fileName, err := h.services.DownloadPluginConfig(plugin, version)
-	if err != nil {
-		h.services.HandleInternalErr(c, errors.ErrS3DownloadingPluginConfig, err)
-		return
-	}
-
-	c.FileAttachment(*filePath, *fileName)
 }
