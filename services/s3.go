@@ -168,7 +168,7 @@ func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) 
 		return nil, nil, err
 	}
 
-	return &mapWorldFilePath, &mapWorldFileName, err
+	return &mapWorldFilePath, &mapWorldFileName, nil
 }
 
 func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string) (*string, *string, error) {
@@ -187,7 +187,7 @@ func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string)
 		return nil, nil, err
 	}
 
-	return &mapConfigFilePath, &mapConfigFileName, err
+	return &mapConfigFilePath, &mapConfigFileName, nil
 }
 
 func (s *S3Service) GetPluginsList() ([]*s3.Object, error) {
@@ -242,5 +242,5 @@ func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string,
 		return nil, nil, err
 	}
 
-	return &pluginJarFilePath, &plugin, err
+	return &pluginJarFilePath, &plugin, nil
 }

@@ -4,15 +4,33 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/mineleaguedev/rest-api/errors"
+	"net"
 	"net/http"
+	"strings"
 )
+
+func getClientIP(httpServer *http.Request) net.IP {
+	var userIP string
+	if len(httpServer.Header.Get("CF-Connecting-IP")) > 1 {
+		userIP = httpServer.Header.Get("CF-Connecting-IP")
+	} else if len(httpServer.Header.Get("X-Forwarded-For")) > 1 {
+		userIP = httpServer.Header.Get("X-Forwarded-For")
+	} else if len(httpServer.Header.Get("X-Real-IP")) > 1 {
+		userIP = httpServer.Header.Get("X-Real-IP")
+	} else {
+		userIP = httpServer.RemoteAddr
+		if strings.Contains(userIP, ":") {
+			return net.ParseIP(strings.Split(userIP, ":")[0])
+		} else {
+			return net.ParseIP(userIP)
+		}
+	}
+	return net.ParseIP(userIP)
+}
 
 func (h *Handler) ServerAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ip := c.ClientIP()
-		if ip == "::1" {
-			ip = "127.0.0.1"
-		}
+		ip := getClientIP(c.Request).String()
 
 		var exists bool
 		if err := h.generalDB.QueryRow("SELECT 1 FROM `servers` WHERE `ip` = INET_ATON(?)", ip).Scan(&exists); err != nil {
