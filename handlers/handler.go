@@ -59,56 +59,62 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		authGroup.GET("/deleteCloak", h.services.RenderDeleteCloakForm)
 	}
 
-	cabinetGroup := router.Group("/").Use(h.auth.AuthMiddleware())
+	cabinetGroupAuth := router.Group("/").Use(h.auth.AuthMiddleware())
 	{
-		cabinetGroup.POST("/changePass", h.cabinet.PassChangeHandler)
-		cabinetGroup.POST("/changeSkin", h.cabinet.SkinChangeHandler)
-		cabinetGroup.POST("/deleteSkin", h.cabinet.SkinDeleteHandler)
-		cabinetGroup.POST("/changeCloak", h.cabinet.CloakChangeHandler)
-		cabinetGroup.POST("/deleteCloak", h.cabinet.CloakDeleteHandler)
-		cabinetGroup.POST("/transferMoney", h.cabinet.MoneyTransferHandler)
+		cabinetGroupAuth.POST("/changePass", h.cabinet.PassChangeHandler)
+		cabinetGroupAuth.POST("/changeSkin", h.cabinet.SkinChangeHandler)
+		cabinetGroupAuth.POST("/deleteSkin", h.cabinet.SkinDeleteHandler)
+		cabinetGroupAuth.POST("/changeCloak", h.cabinet.CloakChangeHandler)
+		cabinetGroupAuth.POST("/deleteCloak", h.cabinet.CloakDeleteHandler)
+		cabinetGroupAuth.POST("/transferMoney", h.cabinet.MoneyTransferHandler)
 	}
 
-	minigamesGroup := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
+	minigamesGroupServerAdminAuth := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
 	{
-		minigamesGroup.POST("/player", h.minigames.PlayerCreateHandler)
-		minigamesGroup.GET("/player/name/:name", h.minigames.PlayerGetHandler)
-		minigamesGroup.PUT("/player/exp", h.minigames.PlayerExpUpdateHandler)
-		minigamesGroup.PUT("/player/rank", h.minigames.PlayerRankUpdateHandler)
-		minigamesGroup.PUT("/player/coins", h.minigames.PlayerCoinsUpdateHandler)
-		minigamesGroup.PUT("/player/playtime", h.minigames.PlayerPlaytimeUpdateHandler)
-		minigamesGroup.PUT("/player/lastSeen", h.minigames.PlayerLastSeenUpdateHandler)
-		minigamesGroup.POST("/ban", h.minigames.PlayerBanHandler)
-		minigamesGroup.POST("/unban", h.minigames.PlayerUnbanHandler)
-		minigamesGroup.POST("/mute", h.minigames.PlayerMuteHandler)
-		minigamesGroup.POST("/unmute", h.minigames.PlayerUnmuteHandler)
+		minigamesGroupServerAdminAuth.POST("/player", h.minigames.PlayerCreateHandler)
+		minigamesGroupServerAdminAuth.GET("/player/name/:name", h.minigames.PlayerGetHandler)
+		minigamesGroupServerAdminAuth.PUT("/player/exp", h.minigames.PlayerExpUpdateHandler)
+		minigamesGroupServerAdminAuth.PUT("/player/rank", h.minigames.PlayerRankUpdateHandler)
+		minigamesGroupServerAdminAuth.PUT("/player/coins", h.minigames.PlayerCoinsUpdateHandler)
+		minigamesGroupServerAdminAuth.PUT("/player/playtime", h.minigames.PlayerPlaytimeUpdateHandler)
+		minigamesGroupServerAdminAuth.PUT("/player/lastSeen", h.minigames.PlayerLastSeenUpdateHandler)
+		minigamesGroupServerAdminAuth.POST("/ban", h.minigames.PlayerBanHandler)
+		minigamesGroupServerAdminAuth.POST("/unban", h.minigames.PlayerUnbanHandler)
+		minigamesGroupServerAdminAuth.POST("/mute", h.minigames.PlayerMuteHandler)
+		minigamesGroupServerAdminAuth.POST("/unmute", h.minigames.PlayerUnmuteHandler)
 	}
 
-	mapsGroup := router.Group("/")
+	mapsGroupServerAdminAuth := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
 	{
-		mapsGroup.GET("/map", h.maps.MapsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		mapsGroup.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		mapsGroup.GET("/map/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		mapsGroup.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		mapsGroup.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		mapsGroup.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-
-		mapsGroup.POST("/map", h.maps.MapUploadHandler).Use(h.admin.AdminAuthMiddleware())
+		mapsGroupServerAdminAuth.GET("/map", h.maps.MapsGetHandler)
+		mapsGroupServerAdminAuth.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler)
+		mapsGroupServerAdminAuth.GET("/map/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler)
+		mapsGroupServerAdminAuth.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler)
+		mapsGroupServerAdminAuth.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler)
+		mapsGroupServerAdminAuth.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler)
 	}
 
-	pluginsGroup := router.Group("/")
+	mapsGroupAdminAuth := router.Group("/").Use(h.admin.AdminAuthMiddleware())
 	{
-		pluginsGroup.GET("/plugin", h.plugins.PluginsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		pluginsGroup.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-		pluginsGroup.GET("/plugin/:name/:version/", h.plugins.PluginGetHandler).Use(h.admin.ServerAdminAuthMiddleware())
-
-		pluginsGroup.POST("/plugin", h.plugins.PluginUploadHandler).Use(h.admin.AdminAuthMiddleware())
+		mapsGroupAdminAuth.POST("/map", h.maps.MapUploadHandler)
 	}
 
-	adminGroup := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())
+	pluginsGroupServerAdminAuth := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
 	{
-		adminGroup.GET("/server", h.admin.ServersGetHandler)
-		adminGroup.POST("/server", h.admin.ServerAddHandler)
+		pluginsGroupServerAdminAuth.GET("/plugin", h.plugins.PluginsGetHandler)
+		pluginsGroupServerAdminAuth.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler)
+		pluginsGroupServerAdminAuth.GET("/plugin/:name/:version/", h.plugins.PluginGetHandler)
+	}
+
+	pluginsGroupAdminAuth := router.Group("/").Use(h.admin.AdminAuthMiddleware())
+	{
+		pluginsGroupAdminAuth.POST("/plugin", h.plugins.PluginUploadHandler)
+	}
+
+	adminGroupAdminAuth := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())
+	{
+		adminGroupAdminAuth.GET("/server", h.admin.ServersGetHandler)
+		adminGroupAdminAuth.POST("/server", h.admin.ServerAddHandler)
 	}
 
 	return router

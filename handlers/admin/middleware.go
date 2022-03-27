@@ -98,10 +98,7 @@ func (h *Handler) AdminAuthMiddleware() gin.HandlerFunc {
 func (h *Handler) ServerAdminAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// server auth
-		ip := c.ClientIP()
-		if ip == "::1" {
-			ip = "127.0.0.1"
-		}
+		ip := getClientIP(c.Request).String()
 
 		var exists bool
 		if err := h.generalDB.QueryRow("SELECT 1 FROM `servers` WHERE `ip` = INET_ATON(?)", ip).Scan(&exists); err == nil {
