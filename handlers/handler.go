@@ -44,8 +44,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		authGroup.POST("/reg", h.auth.RegHandler)
 		authGroup.GET("/reg/confirm/:token", h.auth.RegConfirmHandler)
 		authGroup.POST("/auth", h.auth.AuthHandler)
-		authGroup.POST("/passReset", h.auth.PassResetHandler)
-		authGroup.GET("/passReset/confirm/:token", h.auth.PassResetConfirmHandler)
+		authGroup.POST("/pass", h.auth.PassResetHandler)
+		authGroup.GET("/pass/confirm/:token", h.auth.PassResetConfirmHandler)
 		authGroup.POST("/refresh", h.auth.RefreshHandler)
 		authGroup.POST("/logout", h.auth.LogoutHandler)
 
@@ -59,14 +59,14 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		authGroup.GET("/deleteCloak", h.services.RenderDeleteCloakForm)
 	}
 
-	cabinetGroupAuth := router.Group("/").Use(h.auth.AuthMiddleware())
+	cabinetGroupAuth := router.Group("/cabinet").Use(h.auth.AuthMiddleware())
 	{
-		cabinetGroupAuth.POST("/changePass", h.cabinet.PassChangeHandler)
-		cabinetGroupAuth.POST("/changeSkin", h.cabinet.SkinChangeHandler)
-		cabinetGroupAuth.POST("/deleteSkin", h.cabinet.SkinDeleteHandler)
-		cabinetGroupAuth.POST("/changeCloak", h.cabinet.CloakChangeHandler)
-		cabinetGroupAuth.POST("/deleteCloak", h.cabinet.CloakDeleteHandler)
-		cabinetGroupAuth.POST("/transferMoney", h.cabinet.MoneyTransferHandler)
+		cabinetGroupAuth.PUT("/pass", h.cabinet.PassChangeHandler)
+		cabinetGroupAuth.POST("/skin", h.cabinet.SkinChangeHandler)
+		cabinetGroupAuth.DELETE("/skin", h.cabinet.SkinDeleteHandler)
+		cabinetGroupAuth.POST("/cloak", h.cabinet.CloakChangeHandler)
+		cabinetGroupAuth.DELETE("/cloak", h.cabinet.CloakDeleteHandler)
+		cabinetGroupAuth.POST("/money", h.cabinet.MoneyTransferHandler)
 	}
 
 	minigamesGroupServerAdminAuth := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
@@ -84,37 +84,29 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		minigamesGroupServerAdminAuth.POST("/unmute", h.minigames.PlayerUnmuteHandler)
 	}
 
-	mapsGroupServerAdminAuth := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
+	mapsGroupServerAdminAuth := router.Group("/map").Use(h.admin.ServerAdminAuthMiddleware())
 	{
-		mapsGroupServerAdminAuth.GET("/map", h.maps.MapsGetHandler)
-		mapsGroupServerAdminAuth.GET("/map/:minigame", h.maps.MiniGameMapsGetHandler)
-		mapsGroupServerAdminAuth.GET("/map/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler)
-		mapsGroupServerAdminAuth.GET("/map/:minigame/:format/:map", h.maps.MapVersionsGetHandler)
-		mapsGroupServerAdminAuth.GET("/map/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler)
-		mapsGroupServerAdminAuth.GET("/map/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler)
+		mapsGroupServerAdminAuth.GET("/", h.maps.MapsGetHandler)
+		mapsGroupServerAdminAuth.GET("/:minigame", h.maps.MiniGameMapsGetHandler)
+		mapsGroupServerAdminAuth.GET("/:minigame/:format", h.maps.MiniGameFormatMapsGetHandler)
+		mapsGroupServerAdminAuth.GET("/:minigame/:format/:map", h.maps.MapVersionsGetHandler)
+		mapsGroupServerAdminAuth.GET("/:minigame/:format/:map/:version/world", h.maps.MapWorldGetHandler)
+		mapsGroupServerAdminAuth.GET("/:minigame/:format/:map/:version/config", h.maps.MapConfigGetHandler)
 	}
 
-	mapsGroupAdminAuth := router.Group("/").Use(h.admin.AdminAuthMiddleware())
+	pluginsGroupServerAdminAuth := router.Group("/plugin").Use(h.admin.ServerAdminAuthMiddleware())
 	{
-		mapsGroupAdminAuth.POST("/map", h.maps.MapUploadHandler)
-	}
-
-	pluginsGroupServerAdminAuth := router.Group("/").Use(h.admin.ServerAdminAuthMiddleware())
-	{
-		pluginsGroupServerAdminAuth.GET("/plugin", h.plugins.PluginsGetHandler)
-		pluginsGroupServerAdminAuth.GET("/plugin/:name", h.plugins.PluginVersionsGetHandler)
-		pluginsGroupServerAdminAuth.GET("/plugin/:name/:version/", h.plugins.PluginGetHandler)
-	}
-
-	pluginsGroupAdminAuth := router.Group("/").Use(h.admin.AdminAuthMiddleware())
-	{
-		pluginsGroupAdminAuth.POST("/plugin", h.plugins.PluginUploadHandler)
+		pluginsGroupServerAdminAuth.GET("/", h.plugins.PluginsGetHandler)
+		pluginsGroupServerAdminAuth.GET("/:name", h.plugins.PluginVersionsGetHandler)
+		pluginsGroupServerAdminAuth.GET("/:name/:version/", h.plugins.PluginGetHandler)
 	}
 
 	adminGroupAdminAuth := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())
 	{
 		adminGroupAdminAuth.GET("/server", h.admin.ServersGetHandler)
 		adminGroupAdminAuth.POST("/server", h.admin.ServerAddHandler)
+		adminGroupAdminAuth.POST("/map", h.maps.MapUploadHandler)
+		adminGroupAdminAuth.POST("/plugin", h.plugins.PluginUploadHandler)
 	}
 
 	return router
