@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-type serverAddRequest struct {
+type serverRequest struct {
 	Ip string `json:"ip" binding:"required"`
 }
 
@@ -49,7 +49,7 @@ func (h *Handler) ServersGetHandler(c *gin.Context) {
 }
 
 func (h *Handler) ServerAddHandler(c *gin.Context) {
-	var input serverAddRequest
+	var input serverRequest
 
 	if err := c.ShouldBind(&input); err != nil {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingAddServerValues)
@@ -62,6 +62,24 @@ func (h *Handler) ServerAddHandler(c *gin.Context) {
 		} else {
 			h.services.HandleInternalErr(c, errors.ErrDBAddingServer, err)
 		}
+		return
+	}
+
+	c.JSON(http.StatusOK, models.Response{
+		Success: true,
+	})
+}
+
+func (h *Handler) ServerDeleteHandler(c *gin.Context) {
+	var input serverRequest
+
+	if err := c.ShouldBind(&input); err != nil {
+		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrMissingDeleteServerValues)
+		return
+	}
+
+	if _, err := h.generalDB.Exec("DELETE FROM `servers` WHERE `ip` = INET_ATON(?)", input.Ip); err != nil {
+		h.services.HandleInternalErr(c, errors.ErrDBDeletingServer, err)
 		return
 	}
 

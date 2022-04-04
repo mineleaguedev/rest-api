@@ -105,8 +105,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		adminGroupAdminAuth.GET("/server", h.admin.ServersGetHandler)
 		adminGroupAdminAuth.POST("/server", h.admin.ServerAddHandler)
-		adminGroupAdminAuth.POST("/map", h.maps.MapUploadHandler)
-		adminGroupAdminAuth.POST("/plugin", h.plugins.PluginUploadHandler)
+		adminGroupAdminAuth.DELETE("/server", h.admin.ServerDeleteHandler)
+		adminGroupAdminAuth.POST("/map", h.admin.MapUploadHandler)
+		adminGroupAdminAuth.POST("/plugin", h.admin.PluginUploadHandler)
 	}
 
 	return router

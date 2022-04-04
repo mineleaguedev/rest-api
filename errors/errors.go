@@ -21,6 +21,7 @@ var (
 	ErrMissingDeleteCloakValues   = errors.New("missing delete cloak values")
 	ErrMissingTransferMoneyValues = errors.New("missing transfer money values")
 	ErrMissingAddServerValues     = errors.New("missing add server values")
+	ErrMissingDeleteServerValues  = errors.New("missing delete server values")
 
 	ErrInvalidUsername = errors.New("invalid username")
 	ErrInvalidPassword = errors.New("invalid password")
@@ -64,9 +65,11 @@ var (
 	ErrDBRegisteringUser      = errors.New("error inserting user into general database")
 	ErrDBGettingUser          = errors.New("error getting user from general database")
 	ErrDBUpdatingUserPassword = errors.New("error updating password in general database")
-	ErrDBAddingServer         = errors.New("error adding server into general database")
-	ErrDBGettingServers       = errors.New("error getting servers from general database")
-	ErrDBServerAlreadyExists  = errors.New("server already exists")
+
+	ErrDBAddingServer        = errors.New("error adding server into general database")
+	ErrDBDeletingServer      = errors.New("error adding server into general database")
+	ErrDBGettingServers      = errors.New("error getting servers from general database")
+	ErrDBServerAlreadyExists = errors.New("server already exists")
 
 	ErrS3UploadingSkin  = errors.New("error uploading skin into skins bucket")
 	ErrS3DeletingSkin   = errors.New("error deleting skin from skins bucket")
@@ -114,10 +117,9 @@ var (
 	ErrMissingMapUploadValues    = errors.New("missing map upload values")
 	ErrMissingPluginUploadValues = errors.New("missing plugin upload values")
 
-	ErrInvalidMapWorldFile     = errors.New("invalid map world file")
-	ErrInvalidMapConfigFile    = errors.New("invalid map config file")
-	ErrInvalidPluginJarFile    = errors.New("invalid plugin jar file")
-	ErrInvalidPluginConfigFile = errors.New("invalid plugin config file")
+	ErrInvalidMapWorldFile  = errors.New("invalid map world file")
+	ErrInvalidMapConfigFile = errors.New("invalid map config file")
+	ErrInvalidPluginJarFile = errors.New("invalid plugin jar file")
 
 	ErrS3GettingMapsList                      = errors.New("error getting maps list from s3 maps bucket")
 	ErrS3GettingMiniGameMapsList              = errors.New("error getting minigame maps list from s3 maps bucket")
@@ -135,5 +137,4 @@ var (
 	ErrS3EmptyPluginVersionsList   = errors.New("empty list of plugin versions in s3 plugins bucket")
 	ErrS3UploadingPlugin           = errors.New("error uploading plugin into s3 plugins bucket")
 	ErrS3DownloadingPluginJar      = errors.New("error downloading plugin jar from s3 plugins bucket")
-	ErrS3DownloadingPluginConfig   = errors.New("error downloading plugin config from s3 plugins bucket")
 )
