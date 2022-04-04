@@ -17,7 +17,10 @@ func (h *Handler) PluginsGetHandler(c *gin.Context) {
 
 	var pluginsList []models.Plugin
 	for _, key := range contents {
-		foldersList := *key.Key
+		foldersList := strings.ReplaceAll(*key.Key, "plugins/", "")
+		if foldersList == "" {
+			continue
+		}
 
 		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
 		for index, folder := range folders {

@@ -25,7 +25,10 @@ func (h *Handler) MiniGameFormatMapsGetHandler(c *gin.Context) {
 
 	var mapsList []models.Map
 	for _, key := range contents {
-		foldersList := *key.Key
+		foldersList := strings.ReplaceAll(*key.Key, "maps/", "")
+		if foldersList == "" {
+			continue
+		}
 
 		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
 		for index, folder := range folders {

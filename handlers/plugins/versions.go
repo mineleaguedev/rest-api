@@ -24,7 +24,10 @@ func (h *Handler) PluginVersionsGetHandler(c *gin.Context) {
 
 	var versionsList []string
 	for _, key := range contents {
-		foldersList := *key.Key
+		foldersList := strings.ReplaceAll(*key.Key, "plugins/", "")
+		if foldersList == "" {
+			continue
+		}
 
 		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
 		for index, folder := range folders {

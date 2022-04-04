@@ -17,7 +17,10 @@ func (h *Handler) MapsGetHandler(c *gin.Context) {
 
 	var minigamesList []models.MiniGames
 	for _, key := range contents {
-		foldersList := *key.Key
+		foldersList := strings.ReplaceAll(*key.Key, "maps/", "")
+		if foldersList == "" {
+			continue
+		}
 
 		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
 		for index, folder := range folders {

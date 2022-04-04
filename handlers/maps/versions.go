@@ -26,7 +26,10 @@ func (h *Handler) MapVersionsGetHandler(c *gin.Context) {
 
 	var versionsList []string
 	for _, key := range contents {
-		foldersList := *key.Key
+		foldersList := strings.ReplaceAll(*key.Key, "maps/", "")
+		if foldersList == "" {
+			continue
+		}
 
 		folders := strings.Split(strings.TrimSuffix(foldersList, "/"), "/")
 		for index, folder := range folders {

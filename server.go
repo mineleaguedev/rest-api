@@ -105,7 +105,7 @@ func main() {
 	// setup aws
 	awsRegion := aws.String(os.Getenv("aws.region"))
 
-	// setup email
+	// setup email ses
 	sess, err := session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
@@ -119,7 +119,7 @@ func main() {
 	}
 	emailClient := ses.New(sess)
 
-	// setup skins
+	// setup skins s3
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
@@ -134,7 +134,7 @@ func main() {
 	skinsUploader := s3manager.NewUploader(sess)
 	skinsManager := s3.New(sess)
 
-	// setup cloaks
+	// setup cloaks s3
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
@@ -149,37 +149,21 @@ func main() {
 	cloaksUploader := s3manager.NewUploader(sess)
 	cloaksManager := s3.New(sess)
 
-	// setup maps
+	// setup minigames s3
 	sess, err = session.NewSession(&aws.Config{
 		Region: awsRegion,
 		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("aws.s3.maps.access.key.id"),
-			os.Getenv("aws.s3.maps.secret.access.key"),
+			os.Getenv("aws.s3.minigames.access.key.id"),
+			os.Getenv("aws.s3.minigames.secret.access.key"),
 			"",
 		),
 	})
 	if err != nil {
-		log.Fatalf("Error connecting to maps s3: %s", err)
+		log.Fatalf("Error connecting to minigames s3: %s", err)
 	}
-	mapsUploader := s3manager.NewUploader(sess)
-	mapsDownloader := s3manager.NewDownloader(sess)
-	mapsManager := s3.New(sess)
-
-	// setup plugins
-	sess, err = session.NewSession(&aws.Config{
-		Region: awsRegion,
-		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("aws.s3.plugins.access.key.id"),
-			os.Getenv("aws.s3.plugins.secret.access.key"),
-			"",
-		),
-	})
-	if err != nil {
-		log.Fatalf("Error connecting to plugins s3: %s", err)
-	}
-	pluginsUploader := s3manager.NewUploader(sess)
-	pluginsDownloader := s3manager.NewDownloader(sess)
-	pluginsManager := s3.New(sess)
+	minigamesUploader := s3manager.NewUploader(sess)
+	minigamesDownloader := s3manager.NewDownloader(sess)
+	minigamesManager := s3.New(sess)
 
 	service := services.NewService(
 		middleware,
@@ -213,20 +197,16 @@ func main() {
 			ChangeCloakForm: template.Must(template.ParseFiles("./forms/change_cloak_form.html")),
 			DeleteCloakForm: template.Must(template.ParseFiles("./forms/delete_cloak_form.html")),
 		}, models.S3Config{
-			SkinsBucket:       aws.String(os.Getenv("aws.s3.skins.bucket.name")),
-			SkinsUploader:     skinsUploader,
-			SkinsManager:      skinsManager,
-			CloaksBucket:      aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
-			CloaksUploader:    cloaksUploader,
-			CloaksManager:     cloaksManager,
-			MapsBucket:        aws.String(os.Getenv("aws.s3.maps.bucket.name")),
-			MapsUploader:      mapsUploader,
-			MapsDownloader:    mapsDownloader,
-			MapsManager:       mapsManager,
-			PluginsBucket:     aws.String(os.Getenv("aws.s3.plugins.bucket.name")),
-			PluginsUploader:   pluginsUploader,
-			PluginsDownloader: pluginsDownloader,
-			PluginsManager:    pluginsManager,
+			SkinsBucket:         aws.String(os.Getenv("aws.s3.skins.bucket.name")),
+			SkinsUploader:       skinsUploader,
+			SkinsManager:        skinsManager,
+			CloaksBucket:        aws.String(os.Getenv("aws.s3.cloaks.bucket.name")),
+			CloaksUploader:      cloaksUploader,
+			CloaksManager:       cloaksManager,
+			MiniGamesBucket:     aws.String(os.Getenv("aws.s3.minigames.bucket.name")),
+			MiniGamesUploader:   minigamesUploader,
+			MiniGamesDownloader: minigamesDownloader,
+			MiniGamesManager:    minigamesManager,
 		})
 	handler := handlers.NewHandler(service, middleware, generalDB, minigamesDB)
 

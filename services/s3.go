@@ -80,8 +80,9 @@ func (s *S3Service) DeleteCloak(username string) error {
 }
 
 func (s *S3Service) GetMapsList() ([]*s3.Object, error) {
-	resp, err := s.config.MapsManager.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: s.config.MapsBucket,
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("maps/"),
 	})
 	if err != nil {
 		return nil, err
@@ -91,9 +92,9 @@ func (s *S3Service) GetMapsList() ([]*s3.Object, error) {
 }
 
 func (s *S3Service) GetMiniGameMapsList(minigame string) ([]*s3.Object, error) {
-	resp, err := s.config.MapsManager.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: s.config.MapsBucket,
-		Prefix: aws.String(minigame),
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("maps/" + minigame),
 	})
 	if err != nil {
 		return nil, err
@@ -103,9 +104,9 @@ func (s *S3Service) GetMiniGameMapsList(minigame string) ([]*s3.Object, error) {
 }
 
 func (s *S3Service) GetMiniGameFormatMapsList(minigame, format string) ([]*s3.Object, error) {
-	resp, err := s.config.MapsManager.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: s.config.MapsBucket,
-		Prefix: aws.String(minigame + "/" + format),
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("maps/" + minigame + "/" + format),
 	})
 	if err != nil {
 		return nil, err
@@ -115,9 +116,9 @@ func (s *S3Service) GetMiniGameFormatMapsList(minigame, format string) ([]*s3.Ob
 }
 
 func (s *S3Service) GetMiniGameFormatMapVersionsList(minigame, format, mapName string) ([]*s3.Object, error) {
-	resp, err := s.config.MapsManager.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: s.config.MapsBucket,
-		Prefix: aws.String(minigame + "/" + format + "/" + mapName),
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("maps/" + minigame + "/" + format + "/" + mapName),
 	})
 	if err != nil {
 		return nil, err
@@ -130,22 +131,22 @@ func (s *S3Service) UploadMap(minigame, format, mapName, version string, worldFi
 	objects := []s3manager.BatchUploadObject{
 		{
 			Object: &s3manager.UploadInput{
-				Bucket: s.config.MapsBucket,
-				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapWorldFileName),
+				Bucket: s.config.MiniGamesBucket,
+				Key:    aws.String("maps/" + minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapWorldFileName),
 				Body:   worldFile,
 			},
 		},
 		{
 			Object: &s3manager.UploadInput{
-				Bucket: s.config.MapsBucket,
-				Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapConfigFileName),
+				Bucket: s.config.MiniGamesBucket,
+				Key:    aws.String("maps/" + minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapConfigFileName),
 				Body:   configFile,
 			},
 		},
 	}
 
 	iter := &s3manager.UploadObjectsIterator{Objects: objects}
-	if err := s.config.MapsUploader.UploadWithIterator(aws.BackgroundContext(), iter); err != nil {
+	if err := s.config.MiniGamesUploader.UploadWithIterator(aws.BackgroundContext(), iter); err != nil {
 		return err
 	}
 
@@ -160,9 +161,9 @@ func (s *S3Service) DownloadMapWorld(minigame, format, mapName, version string) 
 	defer worldFile.Close()
 
 	// world
-	_, err = s.config.MapsDownloader.Download(worldFile, &s3.GetObjectInput{
-		Bucket: s.config.MapsBucket,
-		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapWorldFileName),
+	_, err = s.config.MiniGamesDownloader.Download(worldFile, &s3.GetObjectInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("maps/" + minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapWorldFileName),
 	})
 	if err != nil {
 		return nil, nil, err
@@ -179,9 +180,9 @@ func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string)
 	defer mapFile.Close()
 
 	// map
-	_, err = s.config.MapsDownloader.Download(mapFile, &s3.GetObjectInput{
-		Bucket: s.config.MapsBucket,
-		Key:    aws.String(minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapConfigFileName),
+	_, err = s.config.MiniGamesDownloader.Download(mapFile, &s3.GetObjectInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("maps/" + minigame + "/" + format + "/" + mapName + "/" + version + "/" + mapConfigFileName),
 	})
 	if err != nil {
 		return nil, nil, err
@@ -191,8 +192,9 @@ func (s *S3Service) DownloadMapConfig(minigame, format, mapName, version string)
 }
 
 func (s *S3Service) GetPluginsList() ([]*s3.Object, error) {
-	resp, err := s.config.PluginsManager.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: s.config.PluginsBucket,
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("plugins/"),
 	})
 	if err != nil {
 		return nil, err
@@ -202,9 +204,9 @@ func (s *S3Service) GetPluginsList() ([]*s3.Object, error) {
 }
 
 func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
-	resp, err := s.config.PluginsManager.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: s.config.PluginsBucket,
-		Prefix: aws.String(plugin + "/"),
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("plugins/" + plugin + "/"),
 	})
 	if err != nil {
 		return nil, err
@@ -214,9 +216,9 @@ func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
 }
 
 func (s *S3Service) UploadPlugin(plugin, version string, jarFile multipart.File) error {
-	_, err := s.config.PluginsUploader.Upload(&s3manager.UploadInput{
-		Bucket: s.config.PluginsBucket,
-		Key:    aws.String(plugin + "/" + version + "/" + pluginJarFileName),
+	_, err := s.config.MiniGamesUploader.Upload(&s3manager.UploadInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("plugins/" + plugin + "/" + version + "/" + pluginJarFileName),
 		Body:   jarFile,
 	})
 	if err != nil {
@@ -233,10 +235,9 @@ func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string,
 	}
 	defer jarFile.Close()
 
-	// world
-	_, err = s.config.PluginsDownloader.Download(jarFile, &s3.GetObjectInput{
-		Bucket: s.config.PluginsBucket,
-		Key:    aws.String(plugin + "/" + version + "/" + pluginJarFileName),
+	_, err = s.config.MiniGamesDownloader.Download(jarFile, &s3.GetObjectInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("plugins/" + plugin + "/" + version + "/" + pluginJarFileName),
 	})
 	if err != nil {
 		return nil, nil, err
