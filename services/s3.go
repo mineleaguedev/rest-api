@@ -293,6 +293,18 @@ func (s *S3Service) DownloadVelocity(version string) (*string, *string, error) {
 	return &velocityFilePath, &velocityFileName, nil
 }
 
+func (s *S3Service) GetPaperVersionList() ([]*s3.Object, error) {
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("paper/"),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contents, nil
+}
+
 func (s *S3Service) UploadPaper(version string, rarFile multipart.File) error {
 	_, err := s.config.MiniGamesUploader.Upload(&s3manager.UploadInput{
 		Bucket: s.config.MiniGamesBucket,

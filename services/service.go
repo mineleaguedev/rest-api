@@ -71,6 +71,7 @@ type S3 interface {
 	GetVelocityVersionList() ([]*s3.Object, error)
 	UploadVelocity(version string, rarFile multipart.File) error
 	DownloadVelocity(version string) (*string, *string, error)
+	GetPaperVersionList() ([]*s3.Object, error)
 	UploadPaper(version string, rarFile multipart.File) error
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/mineleaguedev/rest-api/handlers/cabinet"
 	"github.com/mineleaguedev/rest-api/handlers/maps"
 	"github.com/mineleaguedev/rest-api/handlers/minigames"
+	"github.com/mineleaguedev/rest-api/handlers/paper"
 	"github.com/mineleaguedev/rest-api/handlers/plugins"
 	"github.com/mineleaguedev/rest-api/handlers/velocity"
 	"github.com/mineleaguedev/rest-api/models"
@@ -23,6 +24,7 @@ type Handler struct {
 	maps      *maps.Handler
 	plugins   *plugins.Handler
 	velocity  *velocity.Handler
+	paper     *paper.Handler
 	services  *services.Service
 }
 
@@ -35,6 +37,7 @@ func NewHandler(services *services.Service, middleware models.JWTMiddleware, gen
 		maps:      maps.NewHandler(services),
 		plugins:   plugins.NewHandler(services),
 		velocity:  velocity.NewHandler(services),
+		paper:     paper.NewHandler(services),
 		services:  services,
 	}
 }
@@ -108,6 +111,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		velocityGroupServerAdminAuth.GET("/", h.velocity.VelocityVersionsGetHandler)
 		velocityGroupServerAdminAuth.GET("/:version", h.velocity.VelocityGetHandler)
+	}
+
+	paperGroupServerAdminAuth := router.Group("/paper").Use(h.admin.ServerAdminAuthMiddleware())
+	{
+		paperGroupServerAdminAuth.GET("/", h.paper.PaperVersionsGetHandler)
 	}
 
 	adminGroupAdminAuth := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())
