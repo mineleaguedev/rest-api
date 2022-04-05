@@ -14,11 +14,13 @@ var (
 	mapConfigFileName = "map.yml"
 	pluginFileName    = "plugin.jar"
 	velocityFileName  = "velocity.rar"
+	paperFileName     = "paper.rar"
 
 	mapWorldFilePath  = "files/" + mapWorldFileName
 	mapConfigFilePath = "files/" + mapConfigFileName
 	pluginFilePath    = "files/" + pluginFileName
 	velocityFilePath  = "files/" + velocityFileName
+	paperFilePath     = "files/" + paperFileName
 )
 
 type S3Service struct {
@@ -289,4 +291,17 @@ func (s *S3Service) DownloadVelocity(version string) (*string, *string, error) {
 	}
 
 	return &velocityFilePath, &velocityFileName, nil
+}
+
+func (s *S3Service) UploadPaper(version string, rarFile multipart.File) error {
+	_, err := s.config.MiniGamesUploader.Upload(&s3manager.UploadInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("paper/" + version + "/" + paperFileName),
+		Body:   rarFile,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

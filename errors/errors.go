@@ -117,11 +117,13 @@ var (
 	ErrMissingMapUploadValues      = errors.New("missing map upload values")
 	ErrMissingPluginUploadValues   = errors.New("missing plugin upload values")
 	ErrMissingVelocityUploadValues = errors.New("missing velocity upload values")
+	ErrMissingPaperUploadValues    = errors.New("missing paper upload values")
 
 	ErrInvalidMapWorldFile    = errors.New("invalid map world file")
 	ErrInvalidMapConfigFile   = errors.New("invalid map config file")
 	ErrInvalidPluginJarFile   = errors.New("invalid plugin jar file")
 	ErrInvalidVelocityRarFile = errors.New("invalid velocity rar file")
+	ErrInvalidPaperRarFile    = errors.New("invalid paper rar file")
 
 	ErrS3GettingMapsList                      = errors.New("error getting maps list from s3 minigames bucket")
 	ErrS3GettingMiniGameMapsList              = errors.New("error getting minigame maps list from s3 minigames bucket")
@@ -144,4 +146,9 @@ var (
 	ErrS3EmptyVelocityVersionsList   = errors.New("empty list of velocity versions in s3 minigames bucket")
 	ErrS3UploadingVelocity           = errors.New("error uploading velocity into s3 minigames bucket")
 	ErrS3DownloadingVelocityRar      = errors.New("error downloading velocity rar from s3 minigames bucket")
+
+	ErrS3GettingPaperVersionsList = errors.New("error getting paper versions list from s3 minigames bucket")
+	ErrS3EmptyPaperVersionsList   = errors.New("empty list of paper versions in s3 minigames bucket")
+	ErrS3UploadingPaper           = errors.New("error uploading paper into s3 minigames bucket")
+	ErrS3DownloadingPaperRar      = errors.New("error downloading paper rar from s3 minigames bucket")
 )

@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mineleaguedev/rest-api/errors"
 	"github.com/mineleaguedev/rest-api/models"
@@ -47,7 +46,6 @@ func (h *Handler) VelocityUploadHandler(c *gin.Context) {
 	}
 
 	rarFileType := http.DetectContentType(rarFileBuffer)
-	fmt.Println(rarFileType)
 	if rarFileType != "application/x-rar-compressed" {
 		h.services.HandleErr(c, http.StatusBadRequest, errors.ErrInvalidVelocityRarFile)
 		return

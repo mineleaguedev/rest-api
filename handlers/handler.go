@@ -118,6 +118,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		adminGroupAdminAuth.POST("/map", h.admin.MapUploadHandler)
 		adminGroupAdminAuth.POST("/plugin", h.admin.PluginUploadHandler)
 		adminGroupAdminAuth.POST("/velocity", h.admin.VelocityUploadHandler)
+		adminGroupAdminAuth.POST("/paper", h.admin.PaperUploadHandler)
 	}
 
 	return router
