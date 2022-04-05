@@ -248,6 +248,18 @@ func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string,
 	return &pluginFilePath, &plugin, nil
 }
 
+func (s *S3Service) GetVelocityVersionList() ([]*s3.Object, error) {
+	resp, err := s.config.MiniGamesManager.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: s.config.MiniGamesBucket,
+		Prefix: aws.String("velocity/"),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contents, nil
+}
+
 func (s *S3Service) UploadVelocity(version string, rarFile multipart.File) error {
 	_, err := s.config.MiniGamesUploader.Upload(&s3manager.UploadInput{
 		Bucket: s.config.MiniGamesBucket,

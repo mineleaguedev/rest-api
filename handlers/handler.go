@@ -10,6 +10,7 @@ import (
 	"github.com/mineleaguedev/rest-api/handlers/maps"
 	"github.com/mineleaguedev/rest-api/handlers/minigames"
 	"github.com/mineleaguedev/rest-api/handlers/plugins"
+	"github.com/mineleaguedev/rest-api/handlers/velocity"
 	"github.com/mineleaguedev/rest-api/models"
 	"github.com/mineleaguedev/rest-api/services"
 )
@@ -21,6 +22,7 @@ type Handler struct {
 	minigames *minigames.Handler
 	maps      *maps.Handler
 	plugins   *plugins.Handler
+	velocity  *velocity.Handler
 	services  *services.Service
 }
 
@@ -32,6 +34,7 @@ func NewHandler(services *services.Service, middleware models.JWTMiddleware, gen
 		minigames: minigames.NewHandler(services, minigamesDB),
 		maps:      maps.NewHandler(services),
 		plugins:   plugins.NewHandler(services),
+		velocity:  velocity.NewHandler(services),
 		services:  services,
 	}
 }
@@ -99,6 +102,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		pluginsGroupServerAdminAuth.GET("/", h.plugins.PluginsGetHandler)
 		pluginsGroupServerAdminAuth.GET("/:name", h.plugins.PluginVersionsGetHandler)
 		pluginsGroupServerAdminAuth.GET("/:name/:version/", h.plugins.PluginGetHandler)
+	}
+
+	velocityGroupServerAdminAuth := router.Group("/velocity").Use(h.admin.ServerAdminAuthMiddleware())
+	{
+		velocityGroupServerAdminAuth.GET("/", h.velocity.VelocityVersionsGetHandler)
 	}
 
 	adminGroupAdminAuth := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())
