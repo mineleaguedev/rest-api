@@ -143,4 +143,5 @@ var (
 	ErrS3GettingVelocityVersionsList = errors.New("error getting velocity versions list from s3 minigames bucket")
 	ErrS3EmptyVelocityVersionsList   = errors.New("empty list of velocity versions in s3 minigames bucket")
 	ErrS3UploadingVelocity           = errors.New("error uploading velocity into s3 minigames bucket")
+	ErrS3DownloadingVelocityRar      = errors.New("error downloading velocity rar from s3 minigames bucket")
 )

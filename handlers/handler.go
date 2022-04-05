@@ -107,6 +107,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	velocityGroupServerAdminAuth := router.Group("/velocity").Use(h.admin.ServerAdminAuthMiddleware())
 	{
 		velocityGroupServerAdminAuth.GET("/", h.velocity.VelocityVersionsGetHandler)
+		velocityGroupServerAdminAuth.GET("/:version", h.velocity.VelocityGetHandler)
 	}
 
 	adminGroupAdminAuth := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())

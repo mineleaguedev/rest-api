@@ -70,6 +70,7 @@ type S3 interface {
 	DownloadPluginJar(plugin, version string) (*string, *string, error)
 	GetVelocityVersionList() ([]*s3.Object, error)
 	UploadVelocity(version string, rarFile multipart.File) error
+	DownloadVelocity(version string) (*string, *string, error)
 }
 
 type Service struct {

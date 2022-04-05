@@ -272,3 +272,21 @@ func (s *S3Service) UploadVelocity(version string, rarFile multipart.File) error
 
 	return nil
 }
+
+func (s *S3Service) DownloadVelocity(version string) (*string, *string, error) {
+	jarFile, err := os.Create(velocityFilePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer jarFile.Close()
+
+	_, err = s.config.MiniGamesDownloader.Download(jarFile, &s3.GetObjectInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("velocity/" + version + "/" + velocityFileName),
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &velocityFilePath, &velocityFileName, nil
+}
