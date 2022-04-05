@@ -68,6 +68,7 @@ type S3 interface {
 	GetPluginVersionsList(plugin string) ([]*s3.Object, error)
 	UploadPlugin(plugin, version string, jarFile multipart.File) error
 	DownloadPluginJar(plugin, version string) (*string, *string, error)
+	UploadVelocity(version string, rarFile multipart.File) error
 }
 
 type Service struct {

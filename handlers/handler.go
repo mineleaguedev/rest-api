@@ -108,6 +108,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		adminGroupAdminAuth.DELETE("/server", h.admin.ServerDeleteHandler)
 		adminGroupAdminAuth.POST("/map", h.admin.MapUploadHandler)
 		adminGroupAdminAuth.POST("/plugin", h.admin.PluginUploadHandler)
+		adminGroupAdminAuth.POST("/velocity", h.admin.VelocityUploadHandler)
 	}
 
 	return router

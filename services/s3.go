@@ -12,11 +12,13 @@ import (
 var (
 	mapWorldFileName  = "world.rar"
 	mapConfigFileName = "map.yml"
-	pluginJarFileName = "plugin.jar"
+	pluginFileName    = "plugin.jar"
+	velocityFileName  = "velocity.rar"
 
 	mapWorldFilePath  = "files/" + mapWorldFileName
 	mapConfigFilePath = "files/" + mapConfigFileName
-	pluginJarFilePath = "files/" + pluginJarFileName
+	pluginFilePath    = "files/" + pluginFileName
+	velocityFilePath  = "files/" + velocityFileName
 )
 
 type S3Service struct {
@@ -218,7 +220,7 @@ func (s *S3Service) GetPluginVersionsList(plugin string) ([]*s3.Object, error) {
 func (s *S3Service) UploadPlugin(plugin, version string, jarFile multipart.File) error {
 	_, err := s.config.MiniGamesUploader.Upload(&s3manager.UploadInput{
 		Bucket: s.config.MiniGamesBucket,
-		Key:    aws.String("plugins/" + plugin + "/" + version + "/" + pluginJarFileName),
+		Key:    aws.String("plugins/" + plugin + "/" + version + "/" + pluginFileName),
 		Body:   jarFile,
 	})
 	if err != nil {
@@ -229,7 +231,7 @@ func (s *S3Service) UploadPlugin(plugin, version string, jarFile multipart.File)
 }
 
 func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string, error) {
-	jarFile, err := os.Create(pluginJarFilePath)
+	jarFile, err := os.Create(pluginFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -237,11 +239,24 @@ func (s *S3Service) DownloadPluginJar(plugin, version string) (*string, *string,
 
 	_, err = s.config.MiniGamesDownloader.Download(jarFile, &s3.GetObjectInput{
 		Bucket: s.config.MiniGamesBucket,
-		Key:    aws.String("plugins/" + plugin + "/" + version + "/" + pluginJarFileName),
+		Key:    aws.String("plugins/" + plugin + "/" + version + "/" + pluginFileName),
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return &pluginJarFilePath, &plugin, nil
+	return &pluginFilePath, &plugin, nil
+}
+
+func (s *S3Service) UploadVelocity(version string, rarFile multipart.File) error {
+	_, err := s.config.MiniGamesUploader.Upload(&s3manager.UploadInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("velocity/" + version + "/" + velocityFileName),
+		Body:   rarFile,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
