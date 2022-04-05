@@ -116,6 +116,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	paperGroupServerAdminAuth := router.Group("/paper").Use(h.admin.ServerAdminAuthMiddleware())
 	{
 		paperGroupServerAdminAuth.GET("/", h.paper.PaperVersionsGetHandler)
+		paperGroupServerAdminAuth.GET("/:version", h.paper.PaperGetHandler)
 	}
 
 	adminGroupAdminAuth := router.Group("/admin").Use(h.admin.AdminAuthMiddleware())

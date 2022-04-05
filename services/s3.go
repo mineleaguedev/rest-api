@@ -317,3 +317,21 @@ func (s *S3Service) UploadPaper(version string, rarFile multipart.File) error {
 
 	return nil
 }
+
+func (s *S3Service) DownloadPaper(version string) (*string, *string, error) {
+	jarFile, err := os.Create(paperFilePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer jarFile.Close()
+
+	_, err = s.config.MiniGamesDownloader.Download(jarFile, &s3.GetObjectInput{
+		Bucket: s.config.MiniGamesBucket,
+		Key:    aws.String("paper/" + version + "/" + paperFileName),
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &paperFilePath, &paperFileName, nil
+}

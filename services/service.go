@@ -73,6 +73,7 @@ type S3 interface {
 	DownloadVelocity(version string) (*string, *string, error)
 	GetPaperVersionList() ([]*s3.Object, error)
 	UploadPaper(version string, rarFile multipart.File) error
+	DownloadPaper(version string) (*string, *string, error)
 }
 
 type Service struct {
